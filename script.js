@@ -47,6 +47,7 @@ scene.add(sun);
 
 const materials=new Map();
 const lamps=[],panels=[],signals=[],infoObjects=[],cars=[],people=[];
+const pointsOfInterest=[];
 function material(color){
   if(!materials.has(color)) materials.set(color,new THREE.MeshStandardMaterial({color,roughness:.76,metalness:.02}));
   return materials.get(color);
@@ -65,6 +66,7 @@ function cylinder(top,bottom,h,color,x=0,y=0,z=0,parent=scene,sides=10){
   const obj=addMesh(new THREE.CylinderGeometry(top,bottom,h,sides),color,parent);obj.position.set(x,y,z);return obj;
 }
 function tag(obj,title,description){obj.userData.details={title,description};infoObjects.push(obj);return obj;}
+function point(icon,title,description,x,y,z){pointsOfInterest.push({icon,title,description,x,y,z});}
 
 // Plataforma e pavimentação urbana.
 box(104,1.3,104,'#4e6559',0,-.75,0);
@@ -167,6 +169,7 @@ cylinder(3.45,3.45,.1,'#53bdcf',0,.58,0,scene,24);
 cylinder(.42,.65,2.35,'#d8e6d8',0,1.74,0,scene,12);
 const fountainWater=ball(.8,'#8cdeef',0,3.05,0);fountainWater.scale.y=.5;
 tag(fountainWater,'💧 Água e sustentabilidade','Uma cidade inteligente pode monitorar consumo de água, vazamentos e qualidade dos recursos hídricos.');
+point('💧','Fonte inteligente','A fonte ilustra a importância do monitoramento do consumo de água e da detecção de vazamentos.',0,4.5,0);
 
 // Vegetação e mobiliário.
 function tree(x,z,large=false){
@@ -270,6 +273,12 @@ function solarPanel(x,z){
   tag(p,'☀️ Painel solar','A geração solar mostrada no site é ilustrativa e não representa dados reais de sensores.');
 }
 for(const [x,z] of [[-6,-15],[6,-15],[-6,15],[6,15]])solarPanel(x,z);
+point('☀️','Energia solar','Os painéis fotovoltaicos convertem luz solar em eletricidade. Nesta maquete os indicadores são ilustrativos.',6,4,-15);
+point('💡','Iluminação IoT','Postes inteligentes simulam o acionamento de lâmpadas conforme o ciclo dia e noite.',-35,7,-31);
+point('🚦','Trânsito conectado','Os semáforos são coordenados para organizar o fluxo de veículos nos cruzamentos.',-26,7,-26);
+point('🏡','Casas inteligentes','Casas automatizadas podem utilizar sensores de presença, temperatura e segurança.',15,7,15);
+point('🏢','Edifícios eficientes','Edifícios inteligentes podem economizar energia por meio de sensores e automação.',-44,15,-44);
+point('🌳','Parque sustentável','Áreas verdes reduzem ilhas de calor e melhoram o conforto urbano.',-7,6,7);
 
 // Semáforos coordenados: eixos Leste-Oeste e Norte-Sul nunca têm verde ao mesmo tempo.
 function signal(x,z,axis,angle=0){
@@ -316,22 +325,33 @@ function worldCar(c){
 cars.forEach(worldCar);
 
 // Perfis e figuras 3D com braços, cabelo, roupas, pele, mochilas e estados.
+const npcGenders=['f','m','f','m','f','m','f','m','f','m','f','m'];
 const skins=['#f2c5a2','#b77752','#deb08e','#81533e','#c6906a'];
 const shirts=['#4c9eca','#e2966d','#78b987','#ae8bd0','#e6b861','#d87f99'];
 const hairs=['#30261e','#614332','#171b27','#b78546','#593a2a'];
 function createPedestrian(i){
   const g=new THREE.Group();scene.add(g);
-  const shirt=shirts[i%shirts.length],skin=skins[(i*3)%skins.length];
+  const shirt=shirts[i%shirts.length],skin=skins[(i*3)%skins.length],female=npcGenders[i%12]==='f';
   const torso=box(.63,1.1,.42,shirt,0,1.57,0,g);
   box(.44,.16,.27,'#e6e6d4',0,2.16,0,g);
   const neck=cylinder(.13,.13,.22,skin,0,2.23,0,g);
   const head=ball(.35,skin,0,2.52,0,g);
-  const hair=ball(.35,hairs[(i*7)%hairs.length],0,2.68,-.065,g);hair.scale.y=.52;
+  const hairColor=hairs[(i*7)%hairs.length];
+  const hair=ball(.35,hairColor,0,2.68,-.065,g);hair.scale.y=female?.78:.52;
+  if(female){
+    // Cabelo comprido visível de lado e atrás, sem esconder o rosto.
+    const backHair=ball(.37,hairColor,0,2.36,-.24,g);backHair.scale.set(1,1.55,.7);
+    for(const side of [-1,1]){const lock=ball(.12,hairColor,side*.29,2.34,-.12,g);lock.scale.y=2.2;}
+  }else if(i%4===1){
+    // Corte masculino curto com costeletas.
+    for(const side of [-1,1])box(.075,.19,.17,hairColor,side*.32,2.53,-.04,g);
+  }
   for(const u of [-.13,.13]){
     ball(.034,'#21262b',u,2.54,.33,g);
     box(.11,.025,.025,'#4b3830',u,2.68,.31,g);
   }
-  if(i%3===0)box(.1,.025,.018,'#a65e58',0,2.38,.341,g);
+  if(female)box(.13,.027,.018,'#b66e6e',0,2.38,.341,g);
+  if(!female&&i%5===3)box(.24,.055,.05,'#614636',0,2.36,.32,g);
   const arms=[],legs=[];
   for(const side of [-1,1]){
     const a=new THREE.Group();a.position.set(side*.46,1.98,0);g.add(a);
@@ -342,9 +362,10 @@ function createPedestrian(i){
     box(.29,.17,.46,'#2d3139',0,-.84,.095,l);legs.push(l);
   }
   if(i%5===0)box(.48,.72,.21,'#647c5e',0,1.56,-.34,g);
-  if(i%7===0){
-    cylinder(.4,.35,.13,hairs[(i*7)%hairs.length],0,2.85,0,g,12);
+  if(!female&&i%7===0){
+    cylinder(.4,.35,.13,hairColor,0,2.85,0,g,12);
   }
+  if(female&&i%4===0){const bag=box(.32,.55,.18,'#d4a86c',.53,1.24,.12,g);bag.rotation.z=.12;}
   // Área de clique ampliada e invisível para facilitar selecionar pessoas pequenas.
   const hitbox=new THREE.Mesh(new THREE.CylinderGeometry(.72,.72,3.1,10),new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false}));
   hitbox.position.y=1.55;g.add(hitbox);
@@ -352,7 +373,7 @@ function createPedestrian(i){
   const ring=new THREE.Mesh(new THREE.RingGeometry(.56,.7,24),new THREE.MeshBasicMaterial({color:'#54efb3',side:THREE.DoubleSide,transparent:true,opacity:.92}));
   ring.rotation.x=-Math.PI/2;ring.position.y=.17;ring.visible=false;g.add(ring);
   const track=i%2,side=track?18:12,perimeter=side*8;
-  const p={g,arms,legs,ring,track,side,perimeter,distance:Math.floor(i/2)*perimeter/12,speed:1.08+(i%5)*.08,offset:i*.56,state:'walking',mood:['alegre','calmo','curioso','concentrado'][i%4],id:i};
+  const p={g,arms,legs,ring,track,side,perimeter,distance:Math.floor(i/2)*perimeter/12,speed:1.08+(i%5)*.08,offset:i*.56,state:'walking',mood:['alegre','calmo','curioso','concentrado'][i%4],id:i,gender:female?'f':'m',visitStage:'walking',visitCooldown:0,visitProgress:0};
   people.push(p);
 }
 for(let i=0;i<24;i++)createPedestrian(i);
@@ -370,6 +391,48 @@ function applyPedestrian(p){
   p.g.rotation.y=at.heading;
 }
 people.forEach(applyPedestrian);
+
+// Pavilhão de pesquisa: moradores entram por uma porta real, permanecem dentro e retornam.
+const pavilion=new THREE.Group();pavilion.position.set(0,0,-20.3);scene.add(pavilion);
+box(4.2,3.15,2.6,'#d6e6d5',0,1.66,0,pavilion);
+box(4.65,.3,3.05,'#376e68',0,3.34,0,pavilion);
+box(1.15,2.25,.07,'#0d2928',0,1.21,1.35,pavilion);
+const pavilionDoor=box(.98,2.1,.09,'#4d9b87',-.52,1.2,1.41,pavilion);
+const pavilionSign=box(3.1,.42,.12,'#175747',0,2.95,1.43,pavilion);
+tag(pavilionSign,'🔬 Centro de pesquisa','Os moradores podem visitar o laboratório para estudar sensores, energia e sustentabilidade.');
+point('🔬','Centro de pesquisa','Observe os moradores entrando no laboratório! Aqui são simuladas pesquisas sobre sensores IoT e sustentabilidade.',0,4.3,-20.3);
+const entryDistance=18;
+function updateVisits(p,dt){
+  if(p.visitCooldown>0)p.visitCooldown-=dt;
+  if(p.track!==1||p.id%6!==2||p.state==='talking')return false;
+  if(p.visitStage==='walking'){
+    // Entrada acontece somente ao passar pela calçada diante da porta.
+    if(p.visitCooldown<=0&&Math.abs(p.distance-entryDistance)<.25){p.visitStage='approach';p.visitProgress=0;}
+    else return false;
+  }
+  if(p.visitStage==='approach'){
+    p.visitProgress=Math.min(1,p.visitProgress+dt*.52);
+    const t=p.visitProgress;
+    p.g.position.set(0,.04,-18-(t*1.4));p.g.rotation.y=Math.PI;
+    pavilionDoor.rotation.y=-Math.sin(t*Math.PI)*.8;
+    if(t>=1){p.visitStage='inside';p.visitProgress=0;p.g.visible=false;}
+    return true;
+  }
+  if(p.visitStage==='inside'){
+    p.visitProgress+=dt;
+    if(p.visitProgress>4.5){p.visitStage='leaving';p.visitProgress=0;p.g.visible=true;}
+    return true;
+  }
+  if(p.visitStage==='leaving'){
+    p.visitProgress=Math.min(1,p.visitProgress+dt*.55);
+    const t=p.visitProgress;
+    p.g.position.set(0,.04,-19.4+t*1.4);p.g.rotation.y=0;
+    pavilionDoor.rotation.y=-Math.sin(t*Math.PI)*.8;
+    if(t>=1){p.visitStage='walking';p.visitCooldown=90;p.distance=entryDistance+.3;}
+    return true;
+  }
+  return false;
+}
 
 // UI: mantém controles originais.
 const $=id=>document.getElementById(id);
@@ -468,6 +531,7 @@ function updatePedestrians(dt,time){
       const d=((snap[j]-snap[i]+p.perimeter)%p.perimeter);
       if(d>.001)gap=Math.min(gap,d);
     }
+    if(updateVisits(p,dt))continue;
     const speed=p.state==='talking'?0:Math.min(p.speed,Math.max(0,(gap-1.9)*.65));
     p.distance=(p.distance+speed*dt)%p.perimeter;
     applyPedestrian(p);
@@ -480,6 +544,39 @@ function updatePedestrians(dt,time){
 
 // Interação dos moradores: balões 3D e formulário de conversa dentro do visor.
 iniciarHabitantes({people,renderer,camera,host,labels,controls});
+
+// Marcadores interativos flutuam no cenário 3D e abrem informações no próprio visor.
+const poiLayer=document.createElement('div');poiLayer.className='poi-layer';host.appendChild(poiLayer);
+const poiCard=document.createElement('section');poiCard.className='poi-card';poiCard.hidden=true;
+poiCard.innerHTML='<button class="poi-close" aria-label="Fechar informações">×</button><div class="poi-card-icon"></div><h3></h3><p></p>';
+host.appendChild(poiCard);
+poiCard.querySelector('button').onclick=()=>{poiCard.hidden=true;};
+const poiButtons=pointsOfInterest.map((poi,index)=>{
+  const button=document.createElement('button');button.className='poi-marker';button.type='button';button.title='Clique para conhecer: '+poi.title;
+  button.setAttribute('aria-label','Informações: '+poi.title);
+  button.innerHTML='<span class="poi-marker-icon"></span><span class="poi-marker-label"></span>';
+  button.querySelector('.poi-marker-icon').textContent=poi.icon;
+  button.querySelector('.poi-marker-label').textContent=poi.title;
+  button.onclick=()=>{
+    poiCard.querySelector('.poi-card-icon').textContent=poi.icon;
+    poiCard.querySelector('h3').textContent=poi.title;
+    poiCard.querySelector('p').textContent=poi.description;
+    poiCard.hidden=false;
+    document.querySelector('#sceneMessage').textContent='📍 '+poi.title+' — informação aberta no mapa';
+    button.classList.add('visited');
+  };
+  poiLayer.appendChild(button);return button;
+});
+const poiWorld=new THREE.Vector3();
+function updatePOI(){
+  const w=host.clientWidth,h=host.clientHeight;
+  pointsOfInterest.forEach((poi,i)=>{
+    poiWorld.set(poi.x,poi.y,poi.z).project(camera);
+    const inView=poiWorld.z>-1&&poiWorld.z<1&&Math.abs(poiWorld.x)<.95&&Math.abs(poiWorld.y)<.95;
+    const button=poiButtons[i];button.hidden=!inView;
+    if(inView){button.style.left=((poiWorld.x+1)*.5*w)+'px';button.style.top=((-poiWorld.y+1)*.5*h)+'px';}
+  });
+}
 
 const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
 let down=null;
@@ -520,6 +617,6 @@ function animate(){
   updatePedestrians(dt,time);
   if(fountainWater)fountainWater.position.y=3.05+Math.sin(time*2)*.13;
   controls.update();
-  renderer.render(scene,camera);labels.render(scene,camera);
+  renderer.render(scene,camera);labels.render(scene,camera);updatePOI();
 }
 updateUI();animate();
