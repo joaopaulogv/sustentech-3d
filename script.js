@@ -393,8 +393,8 @@ function createPedestrian(i){
     ball(.034,'#21262b',u,2.54,.33,g);
     box(.11,.025,.025,'#4b3830',u,2.68,.31,g);
   }
-  if(female)box(.13,.027,.018,'#b66e6e',0,2.38,.341,g);
-  if(!female&&i%5===3)box(.24,.055,.05,'#614636',0,2.36,.32,g);
+  const mouth=box(.15,.026,.023,female?'#a85c60':'#593b36',0,2.37,.344,g);
+  if(!female&&i%5===3)box(.24,.045,.035,'#614636',0,2.29,.32,g);
   const arms=[],legs=[];
   for(const side of [-1,1]){
     const a=new THREE.Group();a.position.set(side*.46,1.98,0);g.add(a);
@@ -416,7 +416,7 @@ function createPedestrian(i){
   const ring=new THREE.Mesh(new THREE.RingGeometry(.56,.7,24),new THREE.MeshBasicMaterial({color:'#54efb3',side:THREE.DoubleSide,transparent:true,opacity:.92}));
   ring.rotation.x=-Math.PI/2;ring.position.y=.17;ring.visible=false;g.add(ring);
   const track=i%2,side=track?18:12,perimeter=side*8;
-  const p={g,arms,legs,ring,track,side,perimeter,distance:Math.floor(i/2)*perimeter/12,speed:1.08+(i%5)*.08,offset:i*.56,state:'walking',mood:['alegre','calmo','curioso','concentrado'][i%4],id:i,gender:female?'f':'m',visitStage:'walking',visitCooldown:0,visitProgress:0};
+  const p={g,arms,legs,mouth,speakingUntil:0,ring,track,side,perimeter,distance:Math.floor(i/2)*perimeter/12,speed:1.08+(i%5)*.08,offset:i*.56,state:'walking',mood:['alegre','calmo','curioso','concentrado'][i%4],id:i,gender:female?'f':'m',visitStage:'walking',visitCooldown:0,visitProgress:0};
   people.push(p);
 }
 for(let i=0;i<24;i++)createPedestrian(i);
@@ -444,34 +444,81 @@ const pavilionDoor=box(.98,2.1,.09,'#4d9b87',-.52,1.2,1.41,pavilion);
 const pavilionSign=box(3.1,.42,.12,'#175747',0,2.95,1.43,pavilion);
 tag(pavilionSign,'🔬 Centro de pesquisa','Os moradores podem visitar o laboratório para estudar sensores, energia e sustentabilidade.');
 point('🔬','Centro de pesquisa','Observe os moradores entrando no laboratório! Aqui são simuladas pesquisas sobre sensores IoT e sustentabilidade.',0,4.3,-20.3);
-const entryDistance=18;
-function updateVisits(p,dt){
-  if(p.visitCooldown>0)p.visitCooldown-=dt;
-  if(p.track!==1||p.id%6!==3||p.state==='talking')return false;
-  if(p.visitStage==='walking'){
-    // Entrada acontece somente ao passar pela calçada diante da porta.
-    if(p.visitCooldown<=0&&Math.abs(p.distance-entryDistance)<.25){p.visitStage='approach';p.visitProgress=0;}
-    else return false;
+// Rotinas autônomas locais: decisões baseadas em horários, destinos e tarefas.
+// Não chamamos o Gemini a cada frame; a IA generativa permanece exclusiva dos diálogos.
+function foodStall(x,z,title,color,icon){
+  const g=new THREE.Group();g.position.set(x,0,z);scene.add(g);
+  box(4.4,.23,2.5,'#d6c2a3',0,.18,0,g);
+  box(3.8,1.12,1.25,'#b88c68',0,.78,-.28,g);
+  box(4.4,.24,1.75,'#f5e3c2',0,1.42,.15,g);
+  for(const dx of [-1.8,1.8])cylinder(.065,.065,2.4,'#516d61',dx,2.55,-.65,g);
+  box(4.9,.26,2.8,color,0,3.82,-.5,g);
+  for(let i=0;i<5;i++)box(.88,.37,.19,i%2?'#fff1d7':color,-1.95+i*.97,3.56,.91,g);
+  const board=box(3.8,.52,.14,'#194b3c',0,2.9,.93,g);
+  tag(board,icon+' '+title,'Loja com atendente, compras simuladas e moradores que fazem visitas durante suas rotinas.');
+  for(let i=0;i<5;i++)ball(.15,['#e6b867','#c95c4d','#80b96b'][i%3],-1.35+i*.67,1.62,.58,g);
+  point(icon,title,'Os moradores visitam esta loja para comprar alimentos. O atendimento e as rotinas são simulados localmente.',x,5,z);
+}
+foodStall(-6,-7.5,'Café da Praça','#d68b6e','☕');
+foodStall(6,-7.5,'Feira de Alimentos','#5fba8d','🥗');
+const home=new THREE.Group();home.position.set(18,0,0);scene.add(home);
+box(5.5,3.7,5.2,'#f0d9c0',0,2.0,0,home);
+const homeRoof=addMesh(new THREE.ConeGeometry(4.25,1.8,4),'#a65f51',home);homeRoof.rotation.y=Math.PI/4;homeRoof.position.y=4.7;
+box(1.2,2.4,.13,'#457969',-2.82,1.35,0,home);
+for(const z of [-1.45,1.45])box(.14,1,.9,'#99d9df',-2.84,2.7,z,home);
+point('🏠','Casas dos moradores','Alguns habitantes fazem pausas em casa e depois voltam a circular pela cidade.',18,5,0);
+// Cada destino tem um ponto de entrada na calçada e uma porta/balcão.
+const destinations=[
+ {name:'café',track:0,distance:6,door:new THREE.Vector3(-6,.04,-9.1),inside:new THREE.Vector3(-6,.04,-7.6),duration:8},
+ {name:'feira',track:0,distance:18,door:new THREE.Vector3(6,.04,-9.1),inside:new THREE.Vector3(6,.04,-7.6),duration:7},
+ {name:'casa',track:0,distance:36,door:new THREE.Vector3(14,.04,0),inside:new THREE.Vector3(15.8,.04,0),duration:11},
+ {name:'laboratório',track:1,distance:18,door:new THREE.Vector3(0,.04,-19.3),inside:new THREE.Vector3(0,.04,-20.3),duration:9}
+];
+const vendors=[people[1],people[5]];
+vendors[0].vendor='café';vendors[1].vendor='feira';
+vendors[0].g.position.set(-6,.04,-6.5);vendors[0].g.rotation.y=Math.PI;
+vendors[1].g.position.set(6,.04,-6.5);vendors[1].g.rotation.y=Math.PI;
+for(const p of vendors){p.state='working';p.routine='working';}
+function routineAt(p,dt){
+  if(p.vendor)return true;
+  if(p.state==='talking')return false;
+  p.visitCooldown=Math.max(0,p.visitCooldown-dt);
+  if(!p.routine)p.routine='walk';
+  if(p.routine==='walk'){
+    if(p.visitCooldown>0)return false;
+    const options=destinations.filter(d=>d.track===p.track);
+    const chosen=options[Math.floor((p.id*7+Math.floor(p.distance/12))%options.length)];
+    const difference=(p.distance-chosen.distance+p.perimeter)%p.perimeter;
+    if(difference<.22||difference>p.perimeter-.22){
+      p.destination=chosen;p.routine='enter';p.routineTime=0;
+      p.fromPosition=p.g.position.clone();p.g.visible=true;
+      return true;
+    }
+    return false;
   }
-  if(p.visitStage==='approach'){
-    p.visitProgress=Math.min(1,p.visitProgress+dt*.52);
-    const t=p.visitProgress;
-    p.g.position.set(0,.04,-18-(t*1.4));p.g.rotation.y=Math.PI;
-    pavilionDoor.rotation.y=-Math.sin(t*Math.PI)*.8;
-    if(t>=1){p.visitStage='inside';p.visitProgress=0;p.g.visible=false;}
+  const d=p.destination;
+  if(p.routine==='enter'){
+    p.routineTime=Math.min(1,p.routineTime+dt*.43);
+    p.g.position.lerpVectors(p.fromPosition,d.door,p.routineTime);
+    if(p.routineTime>=1){p.routine='inside';p.routineTime=0;}
     return true;
   }
-  if(p.visitStage==='inside'){
-    p.visitProgress+=dt;
-    if(p.visitProgress>4.5){p.visitStage='leaving';p.visitProgress=0;p.g.visible=true;}
+  if(p.routine==='inside'){
+    p.routineTime+=dt;
+    p.g.position.lerp(d.inside,Math.min(1,dt*1.8));
+    p.g.rotation.y+=dt*.3;
+    if(p.routineTime>=d.duration){p.routine='leave';p.routineTime=0;p.fromPosition=p.g.position.clone();}
     return true;
   }
-  if(p.visitStage==='leaving'){
-    p.visitProgress=Math.min(1,p.visitProgress+dt*.55);
-    const t=p.visitProgress;
-    p.g.position.set(0,.04,-19.4+t*1.4);p.g.rotation.y=0;
-    pavilionDoor.rotation.y=-Math.sin(t*Math.PI)*.8;
-    if(t>=1){p.visitStage='walking';p.visitCooldown=90;p.distance=entryDistance+.3;}
+  if(p.routine==='leave'){
+    p.routineTime=Math.min(1,p.routineTime+dt*.45);
+    const sidewalk=pathAt(d.distance,p.side);
+    p.g.position.lerpVectors(p.fromPosition,new THREE.Vector3(sidewalk.x,.04,sidewalk.z),p.routineTime);
+    if(p.routineTime>=1){
+      p.distance=(d.distance+.4)%p.perimeter;
+      p.routine='walk';p.visitCooldown=35+p.id%9*4;
+      applyPedestrian(p);
+    }
     return true;
   }
   return false;
@@ -574,8 +621,8 @@ function updatePedestrians(dt,time){
       const d=((snap[j]-snap[i]+p.perimeter)%p.perimeter);
       if(d>.001)gap=Math.min(gap,d);
     }
-    if(updateVisits(p,dt))continue;
-    const speed=p.state==='talking'?0:Math.min(p.speed,Math.max(0,(gap-1.9)*.65));
+    if(routineAt(p,dt))continue;
+    const speed=Math.min(p.speed,Math.max(0,(gap-1.9)*.65));
     p.distance=(p.distance+speed*dt)%p.perimeter;
     applyPedestrian(p);
     const swing=speed>0.08?Math.sin(time*6+p.offset)*.32:0;
@@ -586,7 +633,7 @@ function updatePedestrians(dt,time){
 }
 
 // Interação dos moradores: balões 3D e formulário de conversa dentro do visor.
-iniciarHabitantes({people,renderer,camera,host,labels,controls});
+const inhabitants=iniciarHabitantes({people,renderer,camera,host,labels,controls});
 
 // Marcadores interativos flutuam no cenário 3D e abrem informações no próprio visor.
 const poiLayer=document.createElement('div');poiLayer.className='poi-layer';host.appendChild(poiLayer);
@@ -658,6 +705,8 @@ function animate(){
   }
   updateCars(dt);
   updatePedestrians(dt,time);
+  for(const p of people){if(p.mouth)p.mouth.scale.y=p.speakingUntil>Date.now()?1.5+Math.abs(Math.sin(time*13+p.id))*5:1;}
+  if(inhabitants?.updateCamera)inhabitants.updateCamera(dt);
   if(fountainWater)fountainWater.position.y=3.05+Math.sin(time*2)*.13;
   controls.update();
   renderer.render(scene,camera);labels.render(scene,camera);updatePOI();
