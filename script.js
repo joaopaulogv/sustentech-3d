@@ -556,9 +556,10 @@ function decideGoal(p){
  for(const d of options){
    const relevance=d.name==='casa'?p.needs.rest:d.name==='laboratório'?p.needs.curiosity:p.needs.hunger;
    const jobBonus=d.name==='laboratório'&&p.id%4===0?.3:0;
+   const timeBonus=night?(d.name==='casa'?.48:d.name==='laboratório'?-.16:0):0;
    const variety=(Math.sin(p.id*14+p.routineIndex*8+d.distance)*.5+.5)*.22;
    const repeatPenalty=p.lastDestination===d.name?-.34:0;
-   const value=relevance+jobBonus+variety+repeatPenalty;
+   const value=relevance+jobBonus+variety+repeatPenalty+timeBonus;
    if(value>score){score=value;best=d;}
  }
  return best;
@@ -586,7 +587,7 @@ function routineAt(p,dt){
  if(p.vendor||p.drivingCar){p.motion=0;return true;}
  p.visitCooldown=Math.max(0,p.visitCooldown-dt);
  if(!p.routine)p.routine='walk';
- if(!p.needs)p.needs={hunger:.35,rest:.3,curiosity:.5};
+ if(!p.needs)p.needs={hunger:.4+(p.id%5)*.07,rest:.18+(p.id%3)*.12,curiosity:.3+(p.id%4)*.09};
  p.needs.hunger=Math.min(1,p.needs.hunger+dt*.0009);
  p.needs.rest=Math.min(1,p.needs.rest+dt*.0007);
  p.needs.curiosity=Math.min(1,p.needs.curiosity+dt*.0009);
@@ -609,7 +610,7 @@ function routineAt(p,dt){
      p.destination=d;p.nextDestination=null;
      p.distance=d.distance;
      applyPedestrian(p);
-     p.activity='Indo ao '+d.name;
+     p.activity={café:'Indo ao café',feira:'Indo à feira',casa:'Indo para casa',laboratório:'Indo ao laboratório'}[d.name]||'Indo ao destino';
      beginPath(p,d.points,'enter');
      if(d.name==='casa')homeDoorOpenUntil=performance.now()+3200;
      if(d.name==='laboratório')labDoorOpenUntil=performance.now()+3000;
