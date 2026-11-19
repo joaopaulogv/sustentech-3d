@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import { iniciarHabitantes } from './habitantes.js';
 
 // SUSTENTECH 5.0: cidade expandida, IA, visual low-poly e mobilidade com segurança.
@@ -10,7 +10,7 @@ const scene=new THREE.Scene();
 scene.background=new THREE.Color('#acdcd0');
 scene.fog=new THREE.Fog('#acdcd0',175,360);
 const camera=new THREE.PerspectiveCamera(43,1,0.1,350);
-camera.position.set(143,132,152);
+camera.position.set(70,65,78);
 const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.75));
 renderer.shadowMap.enabled=true;
@@ -434,6 +434,7 @@ function applyPedestrian(p){
   p.g.rotation.y=at.heading;
 }
 people.forEach(applyPedestrian);
+for(const p of people){p.nextDestination=null;p.routineIndex=0;p.visitCooldown=8+p.id*1.4;}
 
 // Pavilhão de pesquisa: moradores entram por uma porta real, permanecem dentro e retornam.
 const pavilion=new THREE.Group();pavilion.position.set(0,0,-20.3);scene.add(pavilion);
@@ -456,11 +457,14 @@ function foodStall(x,z,title,color,icon){
   for(let i=0;i<5;i++)box(.88,.37,.19,i%2?'#fff1d7':color,-1.95+i*.97,3.56,.91,g);
   const board=box(3.8,.52,.14,'#194b3c',0,2.9,.93,g);
   tag(board,icon+' '+title,'Loja com atendente, compras simuladas e moradores que fazem visitas durante suas rotinas.');
+  const sign=document.createElement('div');sign.className='scene-shop-name';sign.textContent=icon+' '+title;
+  const signLabel=new CSS2DObject(sign);signLabel.position.set(0,4.65,0);g.add(signLabel);
+
   for(let i=0;i<5;i++)ball(.15,['#e6b867','#c95c4d','#80b96b'][i%3],-1.35+i*.67,1.62,.58,g);
   point(icon,title,'Os moradores visitam esta loja para comprar alimentos. O atendimento e as rotinas são simulados localmente.',x,5,z);
 }
-foodStall(-6,-7.5,'Café da Praça','#d68b6e','☕');
-foodStall(6,-7.5,'Feira de Alimentos','#5fba8d','🥗');
+foodStall(-6,-13.8,'CAFÉ VERDE','#eaa66f','☕');
+foodStall(6,-13.8,'FEIRA VIVA','#55c991','🥗');
 const home=new THREE.Group();home.position.set(18,0,0);scene.add(home);
 box(5.5,3.7,5.2,'#f0d9c0',0,2.0,0,home);
 const homeRoof=addMesh(new THREE.ConeGeometry(4.25,1.8,4),'#a65f51',home);homeRoof.rotation.y=Math.PI/4;homeRoof.position.y=4.7;
@@ -469,15 +473,15 @@ for(const z of [-1.45,1.45])box(.14,1,.9,'#99d9df',-2.84,2.7,z,home);
 point('🏠','Casas dos moradores','Alguns habitantes fazem pausas em casa e depois voltam a circular pela cidade.',18,5,0);
 // Cada destino tem um ponto de entrada na calçada e uma porta/balcão.
 const destinations=[
- {name:'café',track:0,distance:6,door:new THREE.Vector3(-6,.04,-9.1),inside:new THREE.Vector3(-6,.04,-7.6),duration:8},
- {name:'feira',track:0,distance:18,door:new THREE.Vector3(6,.04,-9.1),inside:new THREE.Vector3(6,.04,-7.6),duration:7},
- {name:'casa',track:0,distance:36,door:new THREE.Vector3(14,.04,0),inside:new THREE.Vector3(15.8,.04,0),duration:11},
- {name:'laboratório',track:1,distance:18,door:new THREE.Vector3(0,.04,-19.3),inside:new THREE.Vector3(0,.04,-20.3),duration:9}
+ {name:'café',track:0,distance:6,door:new THREE.Vector3(-6,.04,-12.25),inside:new THREE.Vector3(-6,.04,-12.9),duration:8},
+ {name:'feira',track:0,distance:18,door:new THREE.Vector3(6,.04,-12.25),inside:new THREE.Vector3(6,.04,-12.9),duration:9},
+ {name:'casa',track:1,distance:54,door:new THREE.Vector3(16.5,.04,0),inside:new THREE.Vector3(17.5,.04,0),duration:13},
+ {name:'laboratório',track:1,distance:18,door:new THREE.Vector3(0,.04,-18.95),inside:new THREE.Vector3(0,.04,-20.3),duration:12}
 ];
 const vendors=[people[1],people[5]];
 vendors[0].vendor='café';vendors[1].vendor='feira';
-vendors[0].g.position.set(-6,.04,-6.5);vendors[0].g.rotation.y=Math.PI;
-vendors[1].g.position.set(6,.04,-6.5);vendors[1].g.rotation.y=Math.PI;
+vendors[0].g.position.set(-6,.04,-13.1);vendors[0].g.rotation.y=0;
+vendors[1].g.position.set(6,.04,-13.1);vendors[1].g.rotation.y=0;
 for(const p of vendors){p.state='working';p.routine='working';}
 function routineAt(p,dt){
   if(p.vendor)return true;
@@ -487,10 +491,12 @@ function routineAt(p,dt){
   if(p.routine==='walk'){
     if(p.visitCooldown>0)return false;
     const options=destinations.filter(d=>d.track===p.track);
-    const chosen=options[Math.floor((p.id*7+Math.floor(p.distance/12))%options.length)];
-    const difference=(p.distance-chosen.distance+p.perimeter)%p.perimeter;
-    if(difference<.22||difference>p.perimeter-.22){
-      p.destination=chosen;p.routine='enter';p.routineTime=0;
+    if(!p.nextDestination)p.nextDestination=options[(p.id+p.routineIndex)%options.length];
+    const chosen=p.nextDestination;
+    const difference=Math.abs(p.distance-chosen.distance);
+    if(difference<Math.max(.16,p.speed*dt*2)){
+      p.destination=chosen;p.nextDestination=null;p.routineIndex++;
+      p.routine='enter';p.routineTime=0;
       p.fromPosition=p.g.position.clone();p.g.visible=true;
       return true;
     }
@@ -516,7 +522,7 @@ function routineAt(p,dt){
     p.g.position.lerpVectors(p.fromPosition,new THREE.Vector3(sidewalk.x,.04,sidewalk.z),p.routineTime);
     if(p.routineTime>=1){
       p.distance=(d.distance+.4)%p.perimeter;
-      p.routine='walk';p.visitCooldown=35+p.id%9*4;
+      p.routine='walk';p.visitCooldown=22+p.id%9*3;
       applyPedestrian(p);
     }
     return true;
@@ -562,7 +568,7 @@ ui.auto.onclick=()=>{automatic=true;setPhase('green');};
 ui.manual.onclick=()=>{automatic=false;setPhase(phase);};
 document.querySelectorAll('[data-signal]').forEach(b=>{b.onclick=()=>{if(!automatic)setPhase(b.dataset.signal);};});
 ui.duration.onchange=()=>{ui.duration.value=durations().green;if(automatic&&phase==='green')remaining=durations().green;updateUI();};
-$('resetCamera').onclick=()=>{camera.position.set(143,132,152);controls.target.set(0,0,0);controls.update();};
+$('resetCamera').onclick=()=>{if(inhabitants?.isFollowing())inhabitants.stopFollow();camera.position.set(70,65,78);controls.target.set(0,0,0);controls.update();};
 
 // Movimento no espaço circular da avenida: sem ultrapassar e sem encostar.
 function ahead(a,b,dir){return (((b-a)*dir)%SIZE+SIZE)%SIZE;}
@@ -711,4 +717,26 @@ function animate(){
   controls.update();
   renderer.render(scene,camera);labels.render(scene,camera);updatePOI();
 }
+// Comandos de navegação da nova interface de exploração.
+window.sustentech={
+  setView(view){
+    if(inhabitants?.isFollowing())inhabitants.stopFollow();
+    const presets={
+      aerial:{position:[110,106,116],target:[0,0,0]},
+      street:{position:[25,14,37],target:[0,2,0]},
+      park:{position:[37,42,41],target:[0,0,0]}
+    };
+    const preset=presets[view]||presets.park;
+    controls.target.set(...preset.target);
+    camera.position.set(...preset.position);
+    controls.update();
+    document.querySelector('#sceneMessage').textContent={
+      aerial:'◈ Vista aérea da cidade',
+      street:'⌁ Explorando as ruas',
+      park:'♧ Passeando pelo parque'
+    }[view]||'Explore o mundo';
+  },
+  meetPerson(){inhabitants?.selectPerson?.(0);},
+  getVersion(){return '8.0.1';}
+};
 updateUI();animate();

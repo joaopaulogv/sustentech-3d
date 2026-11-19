@@ -1,203 +1,153 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SUSTENTECH 6.0 | Cidade Inteligente com IA</title>
-<link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="habitantes.css">
-
+<meta name="theme-color" content="#071b1b">
+<meta name="description" content="Explore uma cidade inteligente 3D, acompanhe moradores e converse com personagens com inteligência artificial.">
+<title>SUSTENTECH 8.0 | Uma cidade que ganha vida</title>
+<link rel="stylesheet" href="style.css?v=8.0.1">
+<link rel="stylesheet" href="habitantes.css?v=8.0.1">
 <script type="importmap">
-{
-  "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/"
-  }
-}
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/"}}
 </script>
 </head>
 <body>
-
-<header>
-  <div class="brand">
-    ✦ <span>SUSTENTECH
-      <small>CIDADE INTELIGENTE 7.0 • IA</small>
-    </span>
-  </div>
-  <span class="tag">● SIMULAÇÃO EDUCATIVA</span>
-</header>
-
 <main>
-  <section class="intro">
-    <span class="eyebrow">TECNOLOGIA • MOBILIDADE • SUSTENTABILIDADE</span>
-    <h1>Uma cidade <em>viva e inteligente.</em></h1>
-    <p>Explore a cidade em tela cheia, acompanhe os moradores em suas rotinas, visite lojinhas e converse com personagens usando IA.</p>
-  </section>
+  <section class="world" id="inicio" aria-label="Exploração da cidade inteligente">
+    <div id="scene">
+      <div class="scene-help" id="sceneHelp">Arraste para explorar · Role para aproximar · Clique nos personagens ou marcadores luminosos</div>
+    </div>
+    <div class="world-overlay" aria-hidden="true"></div>
+    <header class="world-header">
+      <a class="brand" href="#inicio" aria-label="Voltar à cidade">
+        <span class="brand-icon">✦</span>
+        <span><strong>SUSTENTECH</strong><small>SMART CITY <b>8.0</b></small></span>
+      </a>
+      <nav class="top-nav" aria-label="Navegação">
+        <a href="#inicio" class="nav-active">Explorar</a>
+        <a href="#controles">Centro de controle</a>
+        <a href="#sobre">O projeto</a>
+      </nav>
+      <div class="header-live"><span class="live-dot"></span> CIDADE EM SIMULAÇÃO</div>
+    </header>
 
-  <div class="layout" id="cidadeInterativa">
-    <section class="scene-card" aria-label="Cidade interativa 3D">
-      <div class="scene-top">
-        <div>
-          <b>Cidade virtual • 188 × 188 unidades • 10 pontos interativos</b>
-          <small>Arraste para girar • Clique em alguém para acompanhar sua caminhada • Role para aproximar</small>
-        </div>
-        <span id="sceneStatus">☀️ Dia</span>
+    <div class="hero-copy">
+      <div class="hero-kicker"><span class="live-dot"></span> UMA EXPERIÊNCIA INTERATIVA COM IA</div>
+      <h1>Uma cidade.<br><em>Mil histórias.</em></h1>
+      <p>Explore ruas, comércios e bairros. Acompanhe a rotina dos habitantes e converse com eles usando inteligência artificial.</p>
+      <div class="hero-buttons">
+        <button id="tourCity" class="button-main" type="button">✦ Começar a explorar <span>↗</span></button>
+        <button id="meetCitizen" class="button-ghost" type="button">◉ Conversar com alguém</button>
       </div>
+    </div>
 
-      <div id="scene">
-        <div class="scene-corner-actions"><button type="button" id="sceneFull" title="Expandir cidade">⛶ Expandir</button><button type="button" id="sceneGuide" title="Como navegar">? Ajuda</button></div>
-        <div class="scene-help">👤 Clique em alguém para seguir seus passos • ☕ Visite as lojas • 📍 Explore os pontos</div>
+    <div class="world-tools">
+      <div class="weather-pill"><span id="sceneStatus">☀️ Dia</span><span class="weather-separator"></span><span>● ONLINE</span></div>
+      <div class="scene-corner-actions">
+        <button id="sceneFull" type="button" title="Expandir a cidade">⛶ <span>Tela cheia</span></button>
+        <button id="sceneGuide" type="button" title="Instruções de navegação">? <span>Ajuda</span></button>
       </div>
+    </div>
 
-      <div class="scene-bottom">
-        <span id="sceneMessage">Explore as tecnologias da cidade</span>
-        <div class="scene-bottom-actions"><button id="resetCamera">↻ Centralizar câmera</button><a href="#controles" class="scene-controls-link">⚙ Controles da cidade ↓</a></div>
+    <div class="view-dock" aria-label="Câmeras da cidade">
+      <div class="dock-caption">VISTAS</div>
+      <button id="cameraWide" type="button" title="Vista aérea da cidade"><span>◈</span><small>Aérea</small></button>
+      <button id="cameraStreet" type="button" title="Vista ao nível da rua"><span>⌁</span><small>Rua</small></button>
+      <button id="cameraPark" type="button" title="Vista do parque"><span>♧</span><small>Parque</small></button>
+      <button id="quickDay" type="button" title="Alternar dia e noite"><span>☾</span><small>Dia/noite</small></button>
+    </div>
+
+    <div class="follow-banner" id="followBanner" hidden>
+      <div class="follow-signal">◉ ACOMPANHANDO MORADOR</div>
+      <strong id="followWho">Morador</strong>
+      <button id="followExit" type="button">✕ Encerrar</button>
+    </div>
+
+    <div class="world-bottom">
+      <div class="world-status">
+        <span class="status-icon">◆</span>
+        <span id="sceneMessage">Um mundo interativo para descobrir</span>
       </div>
-    </section>
-
-    <aside class="panel" id="controles">
-      <h2>Centro de controle</h2>
-      <p>Altere os sistemas da cidade e observe os resultados.</p>
-
-      <div class="control">
-        <div>
-          <strong>🌙 Ciclo dia e noite</strong>
-          <small>Iluminação urbana automática</small>
-        </div>
-        <button id="dayToggle">Noite</button>
+      <div class="world-bottom-actions">
+        <span class="world-stats">24 HABITANTES <b>·</b> 188 × 188</span>
+        <button id="resetCamera" type="button" title="Voltar à vista da cidade">↺ Reiniciar câmera</button>
+        <a class="scroll-to-controls" href="#controles">Painel de controle <span>↓</span></a>
       </div>
-
-      <div class="control">
-        <div>
-          <strong>💡 Postes inteligentes</strong>
-          <small>Acendem durante a noite</small>
-        </div>
-        <label class="switch">
-          <input id="lightsToggle" type="checkbox" checked>
-          <span></span>
-        </label>
-      </div>
-
-      <div class="control">
-        <div>
-          <strong>🚗 Trânsito e pedestres</strong>
-          <small>Ativar ou pausar o movimento</small>
-        </div>
-        <label class="switch">
-          <input id="trafficToggle" type="checkbox" checked>
-          <span></span>
-        </label>
-      </div>
-
-      <div class="control">
-        <div>
-          <strong>☀️ Energia solar</strong>
-          <small>Produção ilustrativa</small>
-        </div>
-        <label class="switch">
-          <input id="solarToggle" type="checkbox" checked>
-          <span></span>
-        </label>
-      </div>
-
-      <div class="traffic-panel">
-        <span class="eyebrow">🚦 CENTRAL SEMAFÓRICA</span>
-        <h3>Configurar semáforo</h3>
-        <p>Controle os eixos de circulação dos quatro cruzamentos: verde para a via Leste–Oeste, vermelho libera Norte–Sul.</p>
-
-        <div class="mode">
-          <button id="autoMode" class="active">Automático</button>
-          <button id="manualMode">Manual</button>
-        </div>
-
-        <div class="signals">
-          <button data-signal="red" class="red" disabled>🔴 Vermelho</button>
-          <button data-signal="yellow" class="yellow" disabled>🟡 Amarelo</button>
-          <button data-signal="green" class="green" disabled>🟢 Verde</button>
-        </div>
-
-        <div class="phase">
-          <span>Estado atual: <b id="signalState">Verde</b></span>
-          <span id="countdown">12s</span>
-        </div>
-
-        <label class="duration">
-          Tempo de verde (segundos)
-          <input id="greenDuration" type="number" min="3" max="60" value="12">
-        </label>
-      </div>
-
-      <div class="metrics">
-        <div>
-          <span>Energia solar</span>
-          <strong id="solarMetric">75%</strong>
-          <small>Simulação</small>
-        </div>
-        <div>
-          <span>Postes acesos</span>
-          <strong id="lightMetric">0/12</strong>
-          <small>Iluminação</small>
-        </div>
-        <div>
-          <span>Trânsito</span>
-          <strong id="trafficMetric">Ativo</strong>
-          <small>Fluxo virtual</small>
-        </div>
-        <div>
-          <span>Pedestres</span>
-          <strong id="npcMetric">24</strong>
-          <small>Habitantes com personalidade</small>
-        </div>
-      </div>
-
-      <div class="info" id="info">
-        <span class="eyebrow">DESCUBRA A CIDADE</span>
-        <h3>Explore a maquete</h3>
-        <p>Clique nos marcadores 📍 para descobrir a cidade. Os moradores seguem rotinas simuladas: visitam cafés, feiras, casas e laboratório. Clique em um morador para acompanhá-lo enquanto conversa.</p>
-      </div>
-    </aside>
-  </div>
-
-  <section class="about" id="sobre">
-    <span class="eyebrow">SOBRE O PROJETO</span>
-    <h2>O que é o Sustentech?</h2>
-    <p>Uma simulação educativa que apresenta automação, mobilidade urbana, iluminação inteligente, energia renovável e personagens virtuais com personalidade. Os indicadores são ilustrativos, sem sensores reais. A IA generativa requer um servidor separado.</p>
-
-    <div class="features">
-      <article>
-        <h3>💡 Iluminação</h3>
-        <p>Postes acionados de acordo com o período do dia.</p>
-      </article>
-      <article>
-        <h3>🚦 Mobilidade</h3>
-        <p>Sinais coordenados, distância de segurança e reserva de cruzamentos.</p>
-      </article>
-      <article>
-        <h3>☀️ Energia</h3>
-        <p>Geração solar representada por painéis virtuais.</p>
-      </article>
     </div>
   </section>
-</main>
 
-<footer>
-  SUSTENTECH 7.0 • Desenvolvimento de Interface de Usuário para IoT • Simulação educacional
-</footer>
+  <section class="dashboard" id="controles">
+    <div class="section-heading">
+      <div><span class="section-tag">◉ CONTROLE EM TEMPO REAL</span><h2>Seu centro de <em>comando.</em></h2>
+      <p>Transforme o ambiente, controle os semáforos e acompanhe como a cidade reage às suas decisões.</p></div>
+      <a href="#inicio" class="back-world">↑ Voltar à cidade</a>
+    </div>
+    <div class="layout">
+      <aside class="panel">
+        <div class="control-group">
+          <div class="group-heading"><span class="group-icon">◑</span><div><h3>Ambiente urbano</h3><p>Iluminação, energia e movimento</p></div></div>
+          <div class="control"><div><strong>🌙 Ciclo dia e noite</strong><small>Alterne a iluminação da cidade</small></div><button id="dayToggle" type="button">Noite</button></div>
+          <div class="control"><div><strong>💡 Iluminação inteligente</strong><small>Postes ativados durante a noite</small></div><label class="switch"><input id="lightsToggle" type="checkbox" checked><span></span></label></div>
+          <div class="control"><div><strong>🚗 Trânsito e pedestres</strong><small>Ative ou pause a mobilidade</small></div><label class="switch"><input id="trafficToggle" type="checkbox" checked><span></span></label></div>
+          <div class="control"><div><strong>☀️ Painéis solares</strong><small>Geração energética ilustrativa</small></div><label class="switch"><input id="solarToggle" type="checkbox" checked><span></span></label></div>
+        </div>
+
+        <div class="traffic-panel">
+          <div class="group-heading"><span class="group-icon">🚦</span><div><h3>Central semafórica</h3><p>Quatro cruzamentos coordenados</p></div></div>
+          <p>Configure o funcionamento dos sinais e observe a movimentação dos veículos.</p>
+          <div class="mode"><button id="autoMode" class="active" type="button">Automático</button><button id="manualMode" type="button">Manual</button></div>
+          <div class="signals"><button type="button" data-signal="red" disabled>🔴 Vermelho</button><button type="button" data-signal="yellow" disabled>🟡 Amarelo</button><button type="button" data-signal="green" disabled>🟢 Verde</button></div>
+          <div class="phase"><span>Estado atual: <b id="signalState">Verde</b></span><span id="countdown">12s</span></div>
+          <label class="duration">Tempo de verde (segundos)<input id="greenDuration" type="number" min="3" max="60" value="12"></label>
+        </div>
+
+        <div class="metrics-panel">
+          <div class="group-heading"><span class="group-icon">▤</span><div><h3>Visão geral</h3><p>Indicadores da simulação</p></div></div>
+          <div class="metrics">
+            <div><span>Geração solar</span><strong id="solarMetric">75%</strong><small>Valor ilustrativo</small></div>
+            <div><span>Postes acesos</span><strong id="lightMetric">0/28</strong><small>Iluminação urbana</small></div>
+            <div><span>Trânsito</span><strong id="trafficMetric">Ativo</strong><small>Fluxo simulado</small></div>
+            <div><span>Habitantes</span><strong id="npcMetric">24</strong><small>Moradores interativos</small></div>
+          </div>
+        </div>
+        <div class="info" id="info"><span class="section-tag">✦ EXPLORE</span><h3>O que você quer descobrir?</h3><p>Clique nos pontos de interesse iluminados dentro da cidade para saber mais sobre as tecnologias.</p></div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="about" id="sobre">
+    <div class="section-heading"><div><span class="section-tag">SOBRE O SUSTENTECH</span><h2>Um laboratório <em>sem limites.</em></h2><p>Uma cidade virtual educativa onde automação, mobilidade urbana e sustentabilidade se encontram.</p></div></div>
+    <div class="features">
+      <article><span class="feature-visual">☀</span><h3>Energia inteligente</h3><p>Painéis solares e iluminação automatizada ilustram soluções sustentáveis.</p></article>
+      <article><span class="feature-visual">⚡</span><h3>Mobilidade conectada</h3><p>Semáforos coordenados, pedestres e veículos em movimento.</p></article>
+      <article><span class="feature-visual">◉</span><h3>Pessoas e IA</h3><p>Converse com moradores com profissões, personalidades e rotinas próprias.</p></article>
+    </div>
+    <p class="project-disclaimer">Projeto educativo de simulação. Os valores exibidos não são leituras reais de sensores; as conversas com Gemini dependem da API configurada na Vercel.</p>
+  </section>
+</main>
+<footer><span>✦ SUSTENTECH 8.0</span><span>Desenvolvimento de interfaces · Internet das Coisas</span><a href="#inicio">Voltar ao topo ↑</a></footer>
 
 <script>
-document.getElementById('sceneFull').addEventListener('click',()=>{
- const card=document.querySelector('.scene-card');card.classList.toggle('scene-expanded');
- const active=card.classList.contains('scene-expanded');
- document.getElementById('sceneFull').textContent=active?'↙ Reduzir':'⛶ Expandir';
- window.dispatchEvent(new Event('resize'));
-});
-document.getElementById('sceneGuide').addEventListener('click',()=>{
- const help=document.querySelector('.scene-help');
- help.textContent='🖱️ Arraste para girar • Role para zoom • Clique no morador para conversar • Durante a conversa a câmera acompanha o morador • Use 📍 para informações';
- help.classList.toggle('guide-visible');
-});
+(function(){
+ const $=id=>document.getElementById(id);
+ $('sceneFull').addEventListener('click',()=>{
+   const v=$('inicio');v.classList.toggle('immersive-fullscreen');
+   $('sceneFull').innerHTML=v.classList.contains('immersive-fullscreen')?'↙ <span>Reduzir</span>':'⛶ <span>Tela cheia</span>';
+   document.body.classList.toggle('fullscreen-city',v.classList.contains('immersive-fullscreen'));
+   window.dispatchEvent(new Event('resize'));
+ });
+ $('sceneGuide').addEventListener('click',()=>{
+   const help=$('sceneHelp');help.classList.toggle('guide-open');
+   help.textContent=help.classList.contains('guide-open')?'Clique em habitantes para acompanhá-los. Os balões ficam no 3D. Use a rodinha do mouse para aproximar, ou escolha uma vista no menu à esquerda.':'Arraste para explorar · Role para aproximar · Clique nos personagens ou marcadores luminosos';
+ });
+ for(const [id,view] of [['cameraWide','aerial'],['cameraStreet','street'],['cameraPark','park'],['tourCity','park']]){
+   $(id).addEventListener('click',()=>window.sustentech?.setView(view));
+ }
+ $('meetCitizen').addEventListener('click',()=>window.sustentech?.meetPerson());
+ $('quickDay').addEventListener('click',()=>$('dayToggle').click());
+})();
 </script>
-<script type="module" src="script.js"></script>
+<script type="module" src="script.js?v=8.0.1"></script>
 </body>
 </html>

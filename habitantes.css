@@ -68,3 +68,12 @@
 .npc-hud-name{font-size:15px}
 .npc-hud-status{color:#b8ffd1}
 .npc-speech{border-radius:17px 17px 17px 5px;box-shadow:0 14px 36px #09271d80}
+
+/* V8: conversa confortável com foco da câmera no morador */
+.npc-hud{right:clamp(15px,4.5vw,80px)!important;bottom:92px!important;top:auto!important;left:auto!important;z-index:23!important;background:rgba(6,35,31,.97)!important;border:1px solid #90ffd0!important;max-width:calc(100% - 30px)}
+.npc-hud-name{color:#ecfff6;font-size:15px}
+.npc-hud-status{color:#a7ffcd}
+.npc-hud.minimized{padding:11px 15px}
+.npc-speech{font-size:13px;line-height:1.5;border:1px solid #81e4b1;background:#f6fff8;color:#143629;box-shadow:0 14px 36px #06241b8c}
+.scene-shop-name{background:rgba(11,49,40,.95);border:1px solid #97ffca;box-shadow:0 9px 24px #061b1685;border-radius:10px;padding:8px 12px;color:#edfff3;font-size:12px;letter-spacing:.07em;font-weight:900;white-space:nowrap}
+@media(max-width:650px){.npc-hud{right:10px!important;bottom:74px!important;width:min(320px,calc(100% - 20px))!important}.scene-shop-name{font-size:10px;padding:5px 8px}}

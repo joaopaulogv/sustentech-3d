@@ -153,18 +153,22 @@ export function iniciarHabitantes({people,renderer,camera,host,controls}){
   // O chat fica em um canto fixo dentro do 3D: não segue a cabeça,
   // não atrapalha a rotação da câmera e pode ser minimizado.
   function positionDialog(){} 
+  function followPlacement(i){
+    const p=people[i];const yaw=p.g.rotation.y;
+    followTarget.set(p.g.position.x,1.7,p.g.position.z);
+    cameraOffset.set(Math.sin(yaw)*8+Math.cos(yaw)*4,5.2,Math.cos(yaw)*8-Math.sin(yaw)*4);
+    followDesired.copy(followTarget).add(cameraOffset);
+  }
   function focusOnPerson(i){
-    const target=people[i].g.position.clone().add(new THREE.Vector3(0,1.8,0));
-    controls.target.copy(target);
-    camera.position.copy(target).add(cameraOffset);
+    followPlacement(i);
+    controls.target.copy(followTarget);
+    camera.position.copy(followDesired);
     controls.update();
   }
   function updateCamera(dt){
     if(selected<0)return;
-    const target=people[selected].g.position;
-    followTarget.set(target.x,1.8,target.z);
-    followDesired.copy(followTarget).add(cameraOffset);
-    const alpha=1-Math.exp(-Math.min(dt,.06)*4.5);
+    followPlacement(selected);
+    const alpha=1-Math.exp(-Math.min(dt,.05)*3.3);
     controls.target.lerp(followTarget,alpha);
     camera.position.lerp(followDesired,alpha);
   }
@@ -208,8 +212,11 @@ export function iniciarHabitantes({people,renderer,camera,host,controls}){
     selected=Math.max(0,Math.min(profiles.length-1,i));
     const p=profiles[selected];
     people.forEach((v,j)=>{v.ring.visible=j===selected;});
-    controls.enableRotate=false;controls.enablePan=false;controls.enableZoom=true;
+    controls.enableRotate=false;controls.enablePan=false;controls.enableZoom=false;
+    controls.enableDamping=false;
     focusOnPerson(selected);
+    const follow=document.getElementById('followBanner');
+    if(follow){follow.hidden=false;document.getElementById('followWho').textContent=p.nome;}
     bubbles.forEach((b,j)=>{b.container.hidden=j!==selected;b.label.hidden=j!==selected;b.speech.hidden=true;});
     if(speechTimer)clearTimeout(speechTimer);
     $('npcSelect').value=String(selected);fill();
@@ -223,7 +230,8 @@ export function iniciarHabitantes({people,renderer,camera,host,controls}){
   }
   function close(){
     if(selected>=0)people[selected].state='walking';
-    controls.enableRotate=true;controls.enablePan=true;
+    controls.enableRotate=true;controls.enablePan=true;controls.enableZoom=true;controls.enableDamping=true;
+    const follow=document.getElementById('followBanner');if(follow)follow.hidden=true;
     bubbles.forEach(b=>{b.container.hidden=true;b.speech.hidden=true;});
     people.forEach(v=>v.ring.visible=false);hud.hidden=true;selected=-1;
   }
@@ -260,6 +268,8 @@ export function iniciarHabitantes({people,renderer,camera,host,controls}){
     status('Memória deste personagem apagada.');
   };
   $('npcClose').onclick=close;
+  const exitFollow=document.getElementById('followExit');
+  if(exitFollow)exitFollow.onclick=close;
   $('npcMode').onchange=()=>{
     $('npcApiSettings').hidden=$('npcMode').value!=='generativa';
     status($('npcMode').value==='local'?'Modo local ativo.':'Modo Gemini: informe ou teste a URL Vercel.');
@@ -335,5 +345,5 @@ export function iniciarHabitantes({people,renderer,camera,host,controls}){
       if(obj){e.stopImmediatePropagation();select(obj.userData.npcId);return;}
     }
   });
-  return {updateCamera};
+  return {updateCamera,selectPerson:select,stopFollow:close,isFollowing:()=>selected>=0};
 }
