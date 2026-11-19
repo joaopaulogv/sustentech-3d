@@ -419,3 +419,15 @@ body { background: radial-gradient(ellipse at 45% -20%, #1d4030, #091713 65%); }
 #scene canvas:active{cursor:grabbing}
 @media(max-width:850px){#scene{height:620px!important}}
 @media(max-width:550px){#scene{height:540px!important;min-height:450px}}
+
+/* SUSTENTECH 6 — marcadores e painéis educativos integrados à cena */
+.poi-layer{position:absolute;inset:0;z-index:7;pointer-events:none;overflow:hidden}
+.poi-marker{position:absolute;transform:translate(-50%,-50%);pointer-events:auto;display:flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid rgba(184,255,218,.9);border-radius:999px;background:rgba(7,48,38,.9);color:#f4fff7;box-shadow:0 6px 24px rgba(0,0,0,.32),0 0 0 4px rgba(56,214,139,.14);backdrop-filter:blur(10px);white-space:nowrap;font-weight:700;font-size:11px;transition:transform .15s,background .15s}
+.poi-marker:hover{transform:translate(-50%,-50%) scale(1.09);background:#187a56}
+.poi-marker-icon{font-size:16px}.poi-marker.visited{border-color:#ffe6a2}
+.poi-marker[hidden]{display:none!important}
+.poi-card{position:absolute;right:14px;bottom:15px;z-index:15;width:min(335px,calc(100% - 28px));padding:17px 18px;border-radius:18px;background:rgba(6,35,28,.96);color:#edfff4;border:1px solid #6ce4a5;box-shadow:0 15px 48px rgba(0,0,0,.45);backdrop-filter:blur(16px)}
+.poi-card[hidden]{display:none!important}
+.poi-card-icon{font-size:27px;margin-bottom:6px}.poi-card h3{font-size:17px;margin:4px 24px 8px 0}.poi-card p{font-size:12px;line-height:1.65;color:#c7f3d9;margin:0}
+.poi-close{position:absolute;top:10px;right:10px;padding:3px 9px;font-size:20px}
+@media(max-width:650px){.poi-marker{padding:7px;font-size:10px}.poi-marker-label{display:none}.poi-marker-icon{font-size:19px}.poi-card{bottom:9px;right:9px}}
