@@ -404,7 +404,7 @@ point('🔬','Centro de pesquisa','Observe os moradores entrando no laboratório
 const entryDistance=18;
 function updateVisits(p,dt){
   if(p.visitCooldown>0)p.visitCooldown-=dt;
-  if(p.track!==1||p.id%6!==2||p.state==='talking')return false;
+  if(p.track!==1||p.id%6!==3||p.state==='talking')return false;
   if(p.visitStage==='walking'){
     // Entrada acontece somente ao passar pela calçada diante da porta.
     if(p.visitCooldown<=0&&Math.abs(p.distance-entryDistance)<.25){p.visitStage='approach';p.visitProgress=0;}
