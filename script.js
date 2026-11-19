@@ -394,6 +394,7 @@ function createPedestrian(i){
     // Corte masculino curto com costeletas.
     for(const side of [-1,1])box(.075,.19,.17,hairColor,side*.32,2.53,-.04,g);
   }
+  const eyes=[];
   for(const u of [-.13,.13]){
     const eye=ball(.035,'#20252c',u,2.54,.33,g);eyes.push(eye);
     ball(.012,'#ffffff',u-.011,2.558,.361,g);
@@ -401,7 +402,6 @@ function createPedestrian(i){
   }
   const mouth=box(.15,.026,.023,female?'#a85c60':'#593b36',0,2.37,.344,g);
   if(!female&&i%5===3)box(.24,.045,.035,'#614636',0,2.29,.32,g);
-  const eyes=[];
   const arms=[],legs=[];
   for(const side of [-1,1]){
     const a=new THREE.Group();a.position.set(side*.46,1.98,0);g.add(a);
@@ -759,6 +759,11 @@ function animateResidents(dt,time){
    const swing=walking>.08?Math.sin(time*7.8+p.offset)*Math.min(.42,.23*walking):0;
    p.legs[0].rotation.x=swing;p.legs[1].rotation.x=-swing;
    p.arms[0].rotation.x=-swing*.8;p.arms[1].rotation.x=swing*.8;
+   if(p.vendor){
+     p.arms[0].rotation.x=-.55+Math.sin(time*2.7+p.id)*.34;
+     p.head.rotation.y=Math.sin(time*.6+p.id)*.12;
+   }
+   if(p.speakingUntil>Date.now())p.arms[1].rotation.x=-.2+Math.sin(time*3+p.id)*.25;
    if(!p.drivingCar){
      p.g.position.y=.04+(walking>.08?Math.abs(Math.sin(time*7.8+p.offset))*.048:0);
      p.head.rotation.z=Math.sin(time*2.5+p.offset)*.017;
