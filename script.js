@@ -249,6 +249,49 @@ for(const x of [-44,-36,-15,15,36,44]){
     blockNum++;
   }
 }
+// Paisagismo da versão 6: canteiros, flores, esculturas e área de convivência.
+function flowerBed(x,z){
+  const g=new THREE.Group();g.position.set(x,0,z);scene.add(g);
+  box(3.2,.28,1.25,'#e5d9bf',0,.23,0,g);
+  box(2.9,.12,.98,'#487e53',0,.44,0,g);
+  const petals=['#ffb3c1','#ffd98a','#f3f0d5','#b7a6f2'];
+  for(let i=0;i<8;i++){
+    const px=-1.2+(i%4)*.8,pz=i<4?-.23:.23;
+    cylinder(.035,.035,.35,'#4d9e59',px,.68,pz,g,6);
+    const flower=ball(.16,petals[(i+Math.round(x))%4<0?(i+Math.round(x))%4+4:(i+Math.round(x))%4],px,.91,pz,g);
+    flower.scale.y=.55;
+  }
+}
+for(const [x,z] of [[-11,-11],[11,-11],[-11,11],[11,11],[-3,11],[3,-11]])flowerBed(x,z);
+function recyclingStation(x,z){
+  const g=new THREE.Group();g.position.set(x,0,z);scene.add(g);
+  for(const [i,color] of ['#3299d1','#e5c454','#62bd7d'].entries()){
+    box(.62,1.15,.67,color,(i-1)*.74,.67,0,g);
+    box(.7,.11,.73,'#264e46',(i-1)*.74,1.28,0,g);
+  }
+  const sign=box(2.5,.45,.14,'#226f55',0,2.2,0,g);
+  tag(sign,'♻️ Coleta seletiva','A separação de resíduos ajuda na reciclagem e reduz o impacto ambiental.');
+}
+recyclingStation(-13,13);recyclingStation(13,-13);
+point('♻️','Coleta seletiva','As lixeiras coloridas representam a separação de materiais recicláveis.',-13,3.8,13);
+// Coberturas fotovoltaicas de convivência no parque.
+function shadeCanopy(x,z){
+  const g=new THREE.Group();g.position.set(x,0,z);scene.add(g);
+  for(const dx of [-2.1,2.1])for(const dz of [-1.3,1.3])cylinder(.09,.12,3.25,'#4c726b',dx,1.7,dz,g);
+  box(5.1,.18,3.4,'#2a6575',0,3.42,0,g);
+  for(const dx of [-1.5,-.5,.5,1.5])box(.045,.03,3.15,'#91d3e5',dx,3.54,0,g);
+  box(2.1,.25,.75,'#9e795b',0,.7,0,g);
+  box(2.1,.65,.14,'#9e795b',0,1.05,-.36,g);
+}
+shadeCanopy(-14,4);shadeCanopy(14,-4);
+// Pequenas placas solares na praça, com sinalização informativa.
+for(const [x,z] of [[-12,0],[12,0]]){
+  const g=new THREE.Group();g.position.set(x,0,z);scene.add(g);
+  cylinder(.08,.11,2.2,'#4c716e',0,1.17,0,g);
+  const sign=box(1.8,.9,.12,'#236b70',0,2.45,0,g);
+  tag(sign,'📡 Sensores urbanos','Os sensores IoT podem acompanhar luminosidade, temperatura e movimento.');
+}
+
 // Postes e painéis fotovoltaicos.
 function lamp(x,z){
   const g=new THREE.Group();g.position.set(x,0,z);scene.add(g);
