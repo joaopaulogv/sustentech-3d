@@ -80,7 +80,7 @@ export default async function handler(req,res){
             signal:AbortSignal.timeout(8000)
           });
           const models=await listing.json();
-          const names=(models.models||[]).filter(m=>m.supportedGenerationMethods?.includes('generateContent')).map(m=>m.name?.replace(/^models\\//,'')).filter(Boolean);
+          const names=(models.models||[]).filter(m=>m.supportedGenerationMethods?.includes('generateContent')).map(m=>m.name?.replace('models/','')).filter(Boolean);
           console.info('Modelos disponíveis para generateContent:',names.join(', '));
           const preferred=['gemini-2.5-flash','gemini-2.5-flash-lite','gemini-2.0-flash','gemini-flash-latest'];
           const fallback=preferred.find(m=>names.includes(m))||names.find(m=>/flash/i.test(m));
