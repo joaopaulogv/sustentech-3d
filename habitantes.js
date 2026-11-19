@@ -32,7 +32,7 @@ const saved=readJson(PROFILE_KEY,[]);
 const profiles=defaults.map((p,i)=>{
   const savedPerson=Array.isArray(saved)?saved.find(v=>v.id===i):null;
   const migrated=savedPerson?{...savedPerson}:null;
-  if(i>=12&&i<24&&migrated&&/\\s(?:Júnior|Neto)$/.test(migrated.nome||''))migrated.nome=p.nome;
+  if(i>=12&&i<24&&migrated&&/\s(?:Júnior|Neto)$/.test(migrated.nome||''))migrated.nome=p.nome;
   return {...p,...migrated};
 });
 const cached=readJson(CHAT_KEY,{});
