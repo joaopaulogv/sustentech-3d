@@ -146,29 +146,38 @@ export function iniciarHabitantes({people,renderer,camera,host,controls}){
   });
   let selected=-1,busy=false,speechTimer=null;
   const worldHead=new THREE.Vector3();
-  const screenPoint=new THREE.Vector3();
-  const cameraOffset=new THREE.Vector3(9,7,11);
   const followTarget=new THREE.Vector3();
   const followDesired=new THREE.Vector3();
-  // O chat fica em um canto fixo dentro do 3D: não segue a cabeça,
-  // não atrapalha a rotação da câmera e pode ser minimizado.
-  function positionDialog(){} 
+  const followDirection=new THREE.Vector3();
+  const followRight=new THREE.Vector3();
+  const worldQuaternion=new THREE.Quaternion();
+  // Câmera cinematográfica: acompanha a posição MUNDIAL, inclusive dentro dos carros,
+  // posicionada na diagonal frontal para mostrar o rosto e não ficar em cima do NPC.
   function followPlacement(i){
-    const p=people[i];const yaw=p.g.rotation.y;
-    followTarget.set(p.g.position.x,1.7,p.g.position.z);
-    cameraOffset.set(Math.sin(yaw)*8+Math.cos(yaw)*4,5.2,Math.cos(yaw)*8-Math.sin(yaw)*4);
-    followDesired.copy(followTarget).add(cameraOffset);
+    const p=people[i];
+    p.g.getWorldPosition(worldHead);
+    p.g.getWorldQuaternion(worldQuaternion);
+    followDirection.set(0,0,1).applyQuaternion(worldQuaternion).setY(0).normalize();
+    if(followDirection.lengthSq()<.01)followDirection.set(0,0,1);
+    followRight.set(followDirection.z,0,-followDirection.x);
+    const inCar=!!p.drivingCar;
+    followTarget.copy(worldHead).add(new THREE.Vector3(0,inCar?.65:1.5,0));
+    followDesired.copy(followTarget)
+      .addScaledVector(followDirection,inCar?8:5.6)
+      .addScaledVector(followRight,inCar?6.5:5)
+      .add(new THREE.Vector3(0,inCar?5.6:4.4,0));
+    followDesired.y=Math.max(followDesired.y,3.5);
   }
   function focusOnPerson(i){
     followPlacement(i);
-    controls.target.copy(followTarget);
-    camera.position.copy(followDesired);
+    controls.target.lerp(followTarget,.48);
+    camera.position.lerp(followDesired,.28);
     controls.update();
   }
   function updateCamera(dt){
     if(selected<0)return;
     followPlacement(selected);
-    const alpha=1-Math.exp(-Math.min(dt,.05)*3.3);
+    const alpha=1-Math.exp(-Math.min(dt,.06)*3.2);
     controls.target.lerp(followTarget,alpha);
     camera.position.lerp(followDesired,alpha);
   }
@@ -200,15 +209,40 @@ export function iniciarHabitantes({people,renderer,camera,host,controls}){
     $('npcRules').value=p.frases;$('npcInstructions').value=p.instrucoes;
     $('npcCreativity').value=p.criatividade;$('npcCreativityValue').textContent=p.criatividade;
   }
-  function speak(i,text,timeout=19000){
+  let speechToken=0;
+  function speak(i,text,timeout=19000,instant=false){
+    const token=++speechToken;
     if(speechTimer)clearTimeout(speechTimer);
-    bubbles.forEach((b,k)=>{b.container.hidden=k!==i;b.speech.hidden=k!==i;});
-    const b=bubbles[i];b.speech.textContent=String(text).slice(0,510);
-    people[i].speakingUntil=Date.now()+Math.min(9500,Math.max(1200,String(text).length*42));
-    speechTimer=setTimeout(()=>{b.speech.hidden=true;},timeout);
+    bubbles.forEach((b,k)=>{b.container.hidden=k!==i;b.speech.hidden=k!==i;b.speech.classList.remove('is-typing');});
+    const b=bubbles[i],full=String(text).slice(0,510);
+    const rate=44; // caracteres por segundo: resposta aparece aos poucos
+    const duration=instant?0:Math.min(15000,full.length/rate*1000);
+    people[i].speakingUntil=Date.now()+Math.max(1300,duration);
+    b.speech.textContent=instant?full:'▌';
+    if(!instant){
+      b.speech.classList.add('is-typing');
+      const start=performance.now();
+      let last=-1;
+      function typeFrame(now){
+        if(token!==speechToken||b.speech.hidden)return;
+        const count=Math.min(full.length,Math.floor((now-start)/1000*rate));
+        if(count!==last){b.speech.textContent=full.slice(0,count)+(count<full.length?'▌':'');last=count;}
+        if(count<full.length)requestAnimationFrame(typeFrame);
+        else{
+          b.speech.classList.remove('is-typing');
+          people[i].speakingUntil=Date.now()+350;
+          if(selected===i)status('✦ '+profiles[i].nome+' terminou de responder.');
+        }
+      }
+      requestAnimationFrame(typeFrame);
+    }
+    speechTimer=setTimeout(()=>{
+      if(token===speechToken&&selected!==i)b.speech.hidden=true;
+    },Math.max(timeout,duration+4800));
   }
   function select(i,showGreeting=true){
     if(busy)return;
+    window.sustentechUi?.beginExploring?.();
     selected=Math.max(0,Math.min(profiles.length-1,i));
     const p=profiles[selected];
     people.forEach((v,j)=>{v.ring.visible=j===selected;});
@@ -219,8 +253,9 @@ export function iniciarHabitantes({people,renderer,camera,host,controls}){
     if(follow){follow.hidden=false;document.getElementById('followWho').textContent=p.nome;}
     bubbles.forEach((b,j)=>{b.container.hidden=j!==selected;b.label.hidden=j!==selected;b.speech.hidden=true;});
     if(speechTimer)clearTimeout(speechTimer);
+    speechToken++;
     $('npcSelect').value=String(selected);fill();
-    $('hudName').textContent=p.nome;$('hudJob').textContent=`${p.profissao} • ${p.humor}`;
+    $('hudName').textContent=p.nome;$('hudJob').textContent=`${p.profissao} • ${people[selected].drivingCar?'dirigindo':p.humor}`;
     hud.hidden=false;hud.classList.remove('minimized');minimizeButton.textContent='−';
     if(showGreeting){
       const previous=chats[selected].filter(m=>m.role==='npc').at(-1);
@@ -232,7 +267,8 @@ export function iniciarHabitantes({people,renderer,camera,host,controls}){
     if(selected>=0)people[selected].state='walking';
     controls.enableRotate=true;controls.enablePan=true;controls.enableZoom=true;controls.enableDamping=true;
     const follow=document.getElementById('followBanner');if(follow)follow.hidden=true;
-    bubbles.forEach(b=>{b.container.hidden=true;b.speech.hidden=true;});
+    speechToken++;
+    bubbles.forEach(b=>{b.container.hidden=true;b.speech.hidden=true;b.speech.classList.remove('is-typing');});
     people.forEach(v=>v.ring.visible=false);hud.hidden=true;selected=-1;
   }
   refreshSelect();fill();
@@ -294,7 +330,7 @@ export function iniciarHabitantes({people,renderer,camera,host,controls}){
     const id=selected,p={...profiles[id]},mode=$('npcMode').value;
     const history=chats[id];history.push({role:'user',text});
     $('npcQuestion').value='';busy=true;$('npcSend').disabled=true;
-    speak(id,'💭 Pensando...',30000);
+    speak(id,'💭 Pensando na resposta...',30000,true);
     status(mode==='generativa'?'Consultando Gemini...':'Preparando resposta local...');
     let reply;
     try{
@@ -338,7 +374,7 @@ export function iniciarHabitantes({people,renderer,camera,host,controls}){
     const rect=renderer.domElement.getBoundingClientRect();
     pointer.set((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1);
     raycaster.setFromCamera(pointer,camera);
-    const hits=raycaster.intersectObjects(people.map(p=>p.g),true);
+    const hits=raycaster.intersectObjects([...people.map(p=>p.g),...people.filter(p=>p.drivingCar).map(p=>p.drivingCar.g)],true);
     for(const hit of hits){
       let obj=hit.object;
       while(obj&&obj.userData.npcId===undefined)obj=obj.parent;
