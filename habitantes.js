@@ -19,14 +19,22 @@ const examples=[
   ['Bruno Dias','Urbanista','Sociável, realista e criativo','calçadas, acessibilidade, mobilidade','amigável','acessibilidade => Uma cidade boa precisa ser acessível para todos.']
 ];
 const genders=['f','m','f','m','f','m','f','m','f','m','f','m'];
-const defaults=Array.from({length:24},(_,i)=>{
-  const b=examples[i%examples.length];
-  return{id:i,genero:genders[i%12],nome:i<12?b[0]:b[0]+' '+(i<18?'Júnior':'Neto'),profissao:b[1],personalidade:b[2],conhecimentos:b[3],estilo:b[4],frases:b[5],instrucoes:'',criatividade:65,humor:['feliz','sereno','curioso','animado'][i%4]};
+const uniqueNames=['Helena Nascimento','Mateus Almeida','Isabela Torres','Daniel Carvalho','Clara Azevedo','Felipe Mendes','Juliana Prado','André Lima','Laura Costa','Victor Martins','Fernanda Reis','Caio Ribeiro'];
+const defaults=Array.from({length:26},(_,i)=>{
+  const b=examples[i%12];
+  const merchant=i===24?['Júlia Campos','Vendedora de café','Acolhedora e simpática','cafés, bebidas, alimentação sustentável','amigável','cafe => Temos café fresco e alimentos da região.']:i===25?['Miguel Reis','Feirante','Comunicativo e gentil','hortas, legumes, frutas','amigável','feira => Nossa feira tem produtos frescos e locais.']:null;
+  const values=merchant||[i<12?b[0]:uniqueNames[i-12],...b.slice(1)];
+  return{id:i,genero:genders[i%12],nome:values[0],profissao:values[1],personalidade:values[2],conhecimentos:values[3],estilo:values[4],frases:values[5],instrucoes:'',criatividade:65,humor:['feliz','sereno','curioso','animado'][i%4]};
 });
 function readJson(key,fallback){try{return JSON.parse(localStorage.getItem(key))??fallback;}catch{return fallback;}}
 function persist(key,value){try{localStorage.setItem(key,JSON.stringify(value));}catch{}}
 const saved=readJson(PROFILE_KEY,[]);
-const profiles=defaults.map((p,i)=>({...p,...(Array.isArray(saved)?saved.find(v=>v.id===i):null)}));
+const profiles=defaults.map((p,i)=>{
+  const savedPerson=Array.isArray(saved)?saved.find(v=>v.id===i):null;
+  const migrated=savedPerson?{...savedPerson}:null;
+  if(i>=12&&i<24&&migrated&&/\\s(?:Júnior|Neto)$/.test(migrated.nome||''))migrated.nome=p.nome;
+  return {...p,...migrated};
+});
 const cached=readJson(CHAT_KEY,{});
 const chats={};
 for(const p of profiles){const c=cached[p.id];chats[p.id]=Array.isArray(c)?c.filter(v=>['npc','user'].includes(v.role)&&typeof v.text==='string').slice(-14):[];}
@@ -180,6 +188,9 @@ export function iniciarHabitantes({people,renderer,camera,host,controls}){
     const alpha=1-Math.exp(-Math.min(dt,.06)*3.2);
     controls.target.lerp(followTarget,alpha);
     camera.position.lerp(followDesired,alpha);
+    const p=people[selected],activity=p?.activity||'Explorando a cidade';
+    const job=document.getElementById('hudJob');
+    if(job){const txt=profiles[selected].profissao+' • '+activity;if(job.textContent!==txt)job.textContent=txt;}
   }
   const minimizeButton=document.createElement('button');
   minimizeButton.type='button';minimizeButton.className='npc-hud-minimize';
@@ -255,7 +266,7 @@ export function iniciarHabitantes({people,renderer,camera,host,controls}){
     if(speechTimer)clearTimeout(speechTimer);
     speechToken++;
     $('npcSelect').value=String(selected);fill();
-    $('hudName').textContent=p.nome;$('hudJob').textContent=`${p.profissao} • ${people[selected].drivingCar?'dirigindo':p.humor}`;
+    $('hudName').textContent=p.nome;$('hudJob').textContent=`${p.profissao} • ${people[selected].activity||p.humor}`;
     hud.hidden=false;hud.classList.remove('minimized');minimizeButton.textContent='−';
     if(showGreeting){
       const previous=chats[selected].filter(m=>m.role==='npc').at(-1);
