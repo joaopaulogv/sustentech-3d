@@ -431,3 +431,43 @@ body { background: radial-gradient(ellipse at 45% -20%, #1d4030, #091713 65%); }
 .poi-card-icon{font-size:27px;margin-bottom:6px}.poi-card h3{font-size:17px;margin:4px 24px 8px 0}.poi-card p{font-size:12px;line-height:1.65;color:#c7f3d9;margin:0}
 .poi-close{position:absolute;top:10px;right:10px;padding:3px 9px;font-size:20px}
 @media(max-width:650px){.poi-marker{padding:7px;font-size:10px}.poi-marker-label{display:none}.poi-marker-icon{font-size:19px}.poi-card{bottom:9px;right:9px}}
+
+/* SUSTENTECH 6.1 — cidade em destaque e controles abaixo */
+html{scroll-behavior:smooth}
+main{max-width:none;padding:0 0 32px;display:flex;flex-direction:column}
+.layout{order:1;display:flex;flex-direction:column;gap:18px;width:100%;align-items:stretch}
+.intro{order:2;max-width:1260px;width:calc(100% - 48px);margin:40px auto 12px;padding:12px 0}
+.about{order:3;max-width:1260px;width:calc(100% - 48px);margin:12px auto 0}
+.scene-card{width:100%;border-radius:0;border-left:0;border-right:0;overflow:visible}
+.scene-top,.scene-bottom{padding:13px clamp(15px,4vw,65px)}
+.scene-top{background:linear-gradient(90deg,#102c21,#12382a)}
+#scene{height:calc(100svh - 175px)!important;min-height:520px!important;max-height:1050px;overflow:hidden;border-radius:0!important}
+.scene-bottom{background:#10261e}
+.scene-bottom-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.scene-controls-link{display:inline-flex;align-items:center;border:1px solid #377658;border-radius:9px;padding:10px 13px;background:#1c5039;color:#d4ffe5;text-decoration:none;font-size:12px}
+.scene-controls-link:hover{background:#2b7953}
+.scene-corner-actions{position:absolute;top:12px;right:12px;z-index:16;display:flex;gap:8px}
+.scene-corner-actions button{font-size:12px;background:rgba(8,43,32,.88);border:1px solid #77cfa1;backdrop-filter:blur(12px);padding:8px 12px}
+.scene-help{max-width:calc(100% - 260px)}
+.scene-help.guide-visible{max-width:440px;line-height:1.6}
+.panel{width:min(1260px,calc(100% - 48px));margin:0 auto;border-radius:18px;padding:clamp(18px,3vw,30px);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:24px;align-items:start}
+.panel>h2,.panel>p{grid-column:1/-1}
+.panel>.traffic-panel,.panel>.metrics,.panel>.info,.panel>.npc-settings{grid-column:1/-1}
+.panel>.npc-settings{margin-top:22px}
+.panel>.control{min-width:0}
+.scene-expanded{position:fixed;inset:0;z-index:100;background:#0c2119;display:flex;flex-direction:column;border:0;border-radius:0}
+.scene-expanded #scene{height:auto!important;max-height:none!important;min-height:0!important;flex:1}
+.scene-expanded .scene-top,.scene-expanded .scene-bottom{flex-shrink:0}
+body:has(.scene-expanded){overflow:hidden}
+@media(max-width:760px){
+ .panel{grid-template-columns:1fr;width:calc(100% - 24px);padding:16px}
+ .panel>.control{grid-column:1}
+ .intro,.about{width:calc(100% - 24px)}
+ #scene{height:calc(100svh - 160px)!important;min-height:440px!important}
+ .scene-help{max-width:calc(100% - 145px);font-size:10px}
+ .scene-corner-actions{top:10px;right:8px;flex-direction:column}
+ .scene-corner-actions button{padding:6px 8px;font-size:10px}
+ .scene-top,.scene-bottom{padding:10px 12px}
+ .scene-bottom-actions{gap:6px}
+ .scene-controls-link{padding:9px}
+}
