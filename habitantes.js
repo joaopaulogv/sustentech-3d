@@ -147,14 +147,26 @@ export function iniciarHabitantes({people,renderer,camera,host,controls}){
   let selected=-1,busy=false,speechTimer=null;
   const worldHead=new THREE.Vector3();
   const screenPoint=new THREE.Vector3();
+  const cameraOffset=new THREE.Vector3(9,7,11);
+  const followTarget=new THREE.Vector3();
+  const followDesired=new THREE.Vector3();
   // O chat fica em um canto fixo dentro do 3D: não segue a cabeça,
   // não atrapalha a rotação da câmera e pode ser minimizado.
   function positionDialog(){} 
   function focusOnPerson(i){
-    const target=people[i].g.position.clone();
-    controls.target.lerp(target,.6);
-    camera.position.lerp(target.clone().add(new THREE.Vector3(14,13,18)),.66);
+    const target=people[i].g.position.clone().add(new THREE.Vector3(0,1.8,0));
+    controls.target.copy(target);
+    camera.position.copy(target).add(cameraOffset);
     controls.update();
+  }
+  function updateCamera(dt){
+    if(selected<0)return;
+    const target=people[selected].g.position;
+    followTarget.set(target.x,1.8,target.z);
+    followDesired.copy(followTarget).add(cameraOffset);
+    const alpha=1-Math.exp(-Math.min(dt,.06)*4.5);
+    controls.target.lerp(followTarget,alpha);
+    camera.position.lerp(followDesired,alpha);
   }
   const minimizeButton=document.createElement('button');
   minimizeButton.type='button';minimizeButton.className='npc-hud-minimize';
@@ -188,13 +200,16 @@ export function iniciarHabitantes({people,renderer,camera,host,controls}){
     if(speechTimer)clearTimeout(speechTimer);
     bubbles.forEach((b,k)=>{b.container.hidden=k!==i;b.speech.hidden=k!==i;});
     const b=bubbles[i];b.speech.textContent=String(text).slice(0,510);
+    people[i].speakingUntil=Date.now()+Math.min(9500,Math.max(1200,String(text).length*42));
     speechTimer=setTimeout(()=>{b.speech.hidden=true;},timeout);
   }
   function select(i,showGreeting=true){
     if(busy)return;
     selected=Math.max(0,Math.min(profiles.length-1,i));
     const p=profiles[selected];
-    people.forEach((v,j)=>{v.ring.visible=j===selected;v.state=j===selected?'talking':'walking';});
+    people.forEach((v,j)=>{v.ring.visible=j===selected;});
+    controls.enableRotate=false;controls.enablePan=false;controls.enableZoom=true;
+    focusOnPerson(selected);
     bubbles.forEach((b,j)=>{b.container.hidden=j!==selected;b.label.hidden=j!==selected;b.speech.hidden=true;});
     if(speechTimer)clearTimeout(speechTimer);
     $('npcSelect').value=String(selected);fill();
@@ -208,6 +223,7 @@ export function iniciarHabitantes({people,renderer,camera,host,controls}){
   }
   function close(){
     if(selected>=0)people[selected].state='walking';
+    controls.enableRotate=true;controls.enablePan=true;
     bubbles.forEach(b=>{b.container.hidden=true;b.speech.hidden=true;});
     people.forEach(v=>v.ring.visible=false);hud.hidden=true;selected=-1;
   }
@@ -298,6 +314,7 @@ export function iniciarHabitantes({people,renderer,camera,host,controls}){
     const b=bubbles[i];
     b.container.hidden=false;b.speech.hidden=false;
     b.speech.textContent=greetings[i%greetings.length];
+    people[i].speakingUntil=Date.now()+2700;
     b.label.hidden=false;
     setTimeout(()=>{if(selected<0){b.container.hidden=true;b.speech.hidden=true;}},4200);
   }
@@ -318,4 +335,5 @@ export function iniciarHabitantes({people,renderer,camera,host,controls}){
       if(obj){e.stopImmediatePropagation();select(obj.userData.npcId);return;}
     }
   });
+  return {updateCamera};
 }
