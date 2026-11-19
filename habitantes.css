@@ -62,3 +62,9 @@
  .npc-hud{right:8px!important;bottom:10px!important;width:min(315px,calc(100% - 16px))!important;padding:10px}
  .npc-hud-focus{font-size:10px;padding:6px}
 }
+
+/* V7: acompanhamento cinematográfico do morador durante a conversa */
+.npc-hud{background:linear-gradient(145deg,rgba(7,37,32,.97),rgba(9,56,39,.96))!important;border-color:#83eeb4!important}
+.npc-hud-name{font-size:15px}
+.npc-hud-status{color:#b8ffd1}
+.npc-speech{border-radius:17px 17px 17px 5px;box-shadow:0 14px 36px #09271d80}
