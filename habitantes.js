@@ -4,6 +4,7 @@ import { CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 const PROFILE_KEY='sustentech_v6_profiles';
 const CHAT_KEY='sustentech_v4_chats';
 const API_KEY='sustentech_v4_api_url';
+const MODE_KEY='sustentech_v9_mode';
 const examples=[
   ['Sofia Martins','Engenheira ambiental','Curiosa, otimista e apaixonada pela natureza','energia solar, reciclagem, parques','amigável','solar => Eu amo painéis solares! Eles geram eletricidade usando a luz do sol.'],
   ['Lucas Ferreira','Estudante de IoT','Criativo, bem-humorado e curioso','programação, jogos, sensores','engraçado','arduino => Eu adoro fazer projetos de IoT com Arduino!'],
@@ -231,6 +232,7 @@ export function iniciarHabitantes({people,renderer,camera,host,controls}){
     people[i].speakingUntil=Date.now()+Math.max(1300,duration);
     b.speech.textContent=instant?full:'▌';
     if(!instant){
+      if(selected===i)status('✍️ '+profiles[i].nome+' está digitando...');
       b.speech.classList.add('is-typing');
       const start=performance.now();
       let last=-1;
@@ -317,7 +319,10 @@ export function iniciarHabitantes({people,renderer,camera,host,controls}){
   $('npcClose').onclick=close;
   const exitFollow=document.getElementById('followExit');
   if(exitFollow)exitFollow.onclick=close;
+  $('npcMode').value=localStorage.getItem(MODE_KEY)||(localStorage.getItem(API_KEY)?'generativa':'local');
+  $('npcApiSettings').hidden=$('npcMode').value!=='generativa';
   $('npcMode').onchange=()=>{
+    try{localStorage.setItem(MODE_KEY,$('npcMode').value);}catch{}
     $('npcApiSettings').hidden=$('npcMode').value!=='generativa';
     status($('npcMode').value==='local'?'Modo local ativo.':'Modo Gemini: informe ou teste a URL Vercel.');
   };
