@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 
-const PROFILE_KEY='sustentech_v4_profiles';
+const PROFILE_KEY='sustentech_v6_profiles';
 const CHAT_KEY='sustentech_v4_chats';
 const API_KEY='sustentech_v4_api_url';
 const examples=[
@@ -18,9 +18,10 @@ const examples=[
   ['Lívia Ribeiro','Pesquisadora','Investigativa, otimista e detalhista','dados, energia, ciência','formal','energia => Monitorar o consumo ajuda a identificar desperdícios.'],
   ['Bruno Dias','Urbanista','Sociável, realista e criativo','calçadas, acessibilidade, mobilidade','amigável','acessibilidade => Uma cidade boa precisa ser acessível para todos.']
 ];
+const genders=['f','m','f','m','f','m','f','m','f','m','f','m'];
 const defaults=Array.from({length:24},(_,i)=>{
   const b=examples[i%examples.length];
-  return{id:i,nome:i<12?b[0]:b[0]+' '+(i<18?'Júnior':'Neto'),profissao:b[1],personalidade:b[2],conhecimentos:b[3],estilo:b[4],frases:b[5],instrucoes:'',criatividade:65,humor:['feliz','sereno','curioso','animado'][i%4]};
+  return{id:i,genero:genders[i%12],nome:i<12?b[0]:b[0]+' '+(i<18?'Júnior':'Neto'),profissao:b[1],personalidade:b[2],conhecimentos:b[3],estilo:b[4],frases:b[5],instrucoes:'',criatividade:65,humor:['feliz','sereno','curioso','animado'][i%4]};
 });
 function readJson(key,fallback){try{return JSON.parse(localStorage.getItem(key))??fallback;}catch{return fallback;}}
 function persist(key,value){try{localStorage.setItem(key,JSON.stringify(value));}catch{}}
