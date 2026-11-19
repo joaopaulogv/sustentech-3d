@@ -1,0 +1,29 @@
+SUSTENTECH 5.0 — CIDADE EXPANDIDA + BALÕES DE FALA
+
+1. GitHub Pages (sem VS Code)
+- Extraia este ZIP. Abra a pasta sustentech-5.
+- Envie os arquivos e a pasta api/ para a RAIZ do repositório GitHub.
+- Substitua index.html, script.js, style.css, habitantes.js e habitantes.css.
+- GitHub Settings > Pages > Deploy from a branch > main > / (root).
+- Atualize o site com Ctrl+Shift+R após o deploy.
+
+2. Como conversar DENTRO do 3D
+- Clique no corpo de um morador. A área de clique foi ampliada.
+- O personagem para e fala por um balão ancorado sobre a cabeça.
+- A caixa de digitação fica SOBREPOSTA à cena, perto do personagem, não embaixo da página.
+- Digite e pressione Enviar. Também surgem balões espontâneos de tempos em tempos.
+- O painel lateral serve para personalizar o NPC e configurar a IA, NÃO para trocar mensagens.
+
+3. API Gemini opcional na Vercel (Opção A)
+- Importe o mesmo repositório GitHub na Vercel, framework Other.
+- Configure Environment Variables: GEMINI_API_KEY e FRONTEND_ORIGIN=https://joaopaulogv.github.io
+- Publique e teste https://SEU-PROJETO.vercel.app/api/status
+- No site, selecione Gemini, cole o domínio HTTPS da Vercel e clique Testar conexão.
+- A chave Gemini nunca deve aparecer em arquivos públicos ou no navegador.
+- A API é pública e exige limites de custo, rate limiting persistente e controle de abuso antes de divulgação ampla.
+
+OBSERVAÇÕES
+- A cidade agora ocupa uma área visual de aproximadamente 188x188 unidades, com distritos externos.
+- As novas vias externas são cenográficas; o tráfego simulado permanece nas vias centrais.
+- A simulação de segurança é simplificada, não uma garantia formal de ausência de colisões.
+- O projeto usa Three.js pela CDN e precisa de internet para carregar a biblioteca.

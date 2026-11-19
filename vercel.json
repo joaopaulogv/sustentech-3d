@@ -1,0 +1,5 @@
+{
+  "functions": {
+    "api/conversar.js": { "maxDuration": 30 }
+  }
+}

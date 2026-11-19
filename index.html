@@ -1,0 +1,189 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SUSTENTECH 5.0 | Cidade Inteligente com IA</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="habitantes.css">
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    ✦ <span>SUSTENTECH
+      <small>CIDADE INTELIGENTE 5.0 • IA</small>
+    </span>
+  </div>
+  <span class="tag">● SIMULAÇÃO EDUCATIVA</span>
+</header>
+
+<main>
+  <section class="intro">
+    <span class="eyebrow">TECNOLOGIA • MOBILIDADE • SUSTENTABILIDADE</span>
+    <h1>Uma cidade <em>viva e inteligente.</em></h1>
+    <p>Explore bairros modernos, acompanhe o trânsito sem colisões planejadas e converse com moradores que têm personalidades próprias.</p>
+  </section>
+
+  <div class="layout">
+    <section class="scene-card">
+      <div class="scene-top">
+        <div>
+          <b>Cidade virtual • 188 × 188 unidades</b>
+          <small>Arraste para girar • Role para aproximar • Clique em um habitante para conversar</small>
+        </div>
+        <span id="sceneStatus">☀️ Dia</span>
+      </div>
+
+      <div id="scene">
+        <div class="scene-help">🖱️ Clique em um morador para falar • 🚦 Controle a cidade no painel</div>
+      </div>
+
+      <div class="scene-bottom">
+        <span id="sceneMessage">Explore as tecnologias da cidade</span>
+        <button id="resetCamera">↻ Centralizar câmera</button>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <h2>Centro de controle</h2>
+      <p>Altere os sistemas da cidade e observe os resultados.</p>
+
+      <div class="control">
+        <div>
+          <strong>🌙 Ciclo dia e noite</strong>
+          <small>Iluminação urbana automática</small>
+        </div>
+        <button id="dayToggle">Noite</button>
+      </div>
+
+      <div class="control">
+        <div>
+          <strong>💡 Postes inteligentes</strong>
+          <small>Acendem durante a noite</small>
+        </div>
+        <label class="switch">
+          <input id="lightsToggle" type="checkbox" checked>
+          <span></span>
+        </label>
+      </div>
+
+      <div class="control">
+        <div>
+          <strong>🚗 Trânsito e pedestres</strong>
+          <small>Ativar ou pausar o movimento</small>
+        </div>
+        <label class="switch">
+          <input id="trafficToggle" type="checkbox" checked>
+          <span></span>
+        </label>
+      </div>
+
+      <div class="control">
+        <div>
+          <strong>☀️ Energia solar</strong>
+          <small>Produção ilustrativa</small>
+        </div>
+        <label class="switch">
+          <input id="solarToggle" type="checkbox" checked>
+          <span></span>
+        </label>
+      </div>
+
+      <div class="traffic-panel">
+        <span class="eyebrow">🚦 CENTRAL SEMAFÓRICA</span>
+        <h3>Configurar semáforo</h3>
+        <p>Controle os eixos de circulação dos quatro cruzamentos: verde para a via Leste–Oeste, vermelho libera Norte–Sul.</p>
+
+        <div class="mode">
+          <button id="autoMode" class="active">Automático</button>
+          <button id="manualMode">Manual</button>
+        </div>
+
+        <div class="signals">
+          <button data-signal="red" class="red" disabled>🔴 Vermelho</button>
+          <button data-signal="yellow" class="yellow" disabled>🟡 Amarelo</button>
+          <button data-signal="green" class="green" disabled>🟢 Verde</button>
+        </div>
+
+        <div class="phase">
+          <span>Estado atual: <b id="signalState">Verde</b></span>
+          <span id="countdown">12s</span>
+        </div>
+
+        <label class="duration">
+          Tempo de verde (segundos)
+          <input id="greenDuration" type="number" min="3" max="60" value="12">
+        </label>
+      </div>
+
+      <div class="metrics">
+        <div>
+          <span>Energia solar</span>
+          <strong id="solarMetric">75%</strong>
+          <small>Simulação</small>
+        </div>
+        <div>
+          <span>Postes acesos</span>
+          <strong id="lightMetric">0/12</strong>
+          <small>Iluminação</small>
+        </div>
+        <div>
+          <span>Trânsito</span>
+          <strong id="trafficMetric">Ativo</strong>
+          <small>Fluxo virtual</small>
+        </div>
+        <div>
+          <span>Pedestres</span>
+          <strong id="npcMetric">24</strong>
+          <small>Habitantes com personalidade</small>
+        </div>
+      </div>
+
+      <div class="info" id="info">
+        <span class="eyebrow">DESCUBRA A CIDADE</span>
+        <h3>Explore a maquete</h3>
+        <p>Clique nos edifícios, árvores, postes, painéis e semáforos para aprender sobre IoT.</p>
+      </div>
+    </aside>
+  </div>
+
+  <section class="about">
+    <span class="eyebrow">SOBRE O PROJETO</span>
+    <h2>O que é o Sustentech?</h2>
+    <p>Uma simulação educativa que apresenta automação, mobilidade urbana, iluminação inteligente, energia renovável e personagens virtuais com personalidade. Os indicadores são ilustrativos, sem sensores reais. A IA generativa requer um servidor separado.</p>
+
+    <div class="features">
+      <article>
+        <h3>💡 Iluminação</h3>
+        <p>Postes acionados de acordo com o período do dia.</p>
+      </article>
+      <article>
+        <h3>🚦 Mobilidade</h3>
+        <p>Sinais coordenados, distância de segurança e reserva de cruzamentos.</p>
+      </article>
+      <article>
+        <h3>☀️ Energia</h3>
+        <p>Geração solar representada por painéis virtuais.</p>
+      </article>
+    </div>
+  </section>
+</main>
+
+<footer>
+  SUSTENTECH 5.0 • Desenvolvimento de Interface de Usuário para IoT • Simulação educacional
+</footer>
+
+<script type="module" src="script.js"></script>
+</body>
+</html>
