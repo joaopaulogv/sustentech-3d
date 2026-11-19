@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import { iniciarHabitantes } from './habitantes.js';
+import { criarMotorRotinas } from './rotinas.js';
 
 // SUSTENTECH 5.0: cidade expandida, IA, visual low-poly e mobilidade com segurança.
 const SIZE=104, EDGE=SIZE/2, ROADS=[-26,26], ROAD_HALF=4.15;
@@ -447,8 +448,7 @@ function applyPedestrian(p){
   p.g.position.set(at.x,.04,at.z);
   p.g.rotation.y=at.heading;
 }
-people.forEach(applyPedestrian);
-for(const p of people){p.nextDestination=null;p.routineIndex=0;p.visitCooldown=8+p.id*1.4;}
+// Os moradores serão inicializados dentro de suas casas, não em pontos aleatórios da rua.
 
 // Pavilhão de pesquisa: moradores entram por uma porta real, permanecem dentro e retornam.
 const pavilion=new THREE.Group();pavilion.position.set(0,0,-20.3);scene.add(pavilion);
@@ -480,173 +480,67 @@ function foodStall(x,z,title,color,icon){
 }
 foodStall(-6,-13.8,'CAFÉ VERDE','#eaa66f','☕');
 foodStall(6,-13.8,'FEIRA VIVA','#55c991','🥗');
-// Residência habitada — uma porta articulada e caminho real até a calçada.
-const home=new THREE.Group();home.position.set(14.5,0,0);scene.add(home);
-box(5.5,3.7,5.2,'#f0d9c0',0,2,0,home);
-box(5.9,.22,5.7,'#e4cfb7',0,.21,0,home);
-const homeRoof=addMesh(new THREE.ConeGeometry(4.25,1.8,4),'#a65f51',home);
-homeRoof.rotation.y=Math.PI/4;homeRoof.position.y=4.7;
-const homeDoorPivot=new THREE.Group();homeDoorPivot.position.set(2.84,0,.57);home.add(homeDoorPivot);
-box(.13,2.19,1.08,'#3e8774',0,1.3,-.54,homeDoorPivot);
-ball(.065,'#f5d691',.12,1.25,-.89,homeDoorPivot);
-for(const z of [-1.44,1.44]){
- box(.13,.95,.93,'#9bdfe4',2.84,2.64,z,home);
- box(.15,.06,1.02,'#f4f7e9',2.95,2.64,z,home);
+// Bairro residencial: casas transparentes (estilo maquete) e portas articuladas.
+// As entradas ficam ligadas às calçadas; nenhum morador atravessa uma parede sólida.
+const residences=[],doorOpenUntil=new Map();
+let labDoorOpenUntil=0;
+const homeColors=['#e6c8aa','#b6d2d6','#d8c1a6','#c3d4e6','#e5c8d2','#cbd8b5'];
+function makeResidence(x,z,angle,index){
+ const g=new THREE.Group();g.position.set(x,0,z);g.rotation.y=angle;scene.add(g);
+ const facade=homeColors[index];
+ const glass=new THREE.MeshStandardMaterial({color:facade,roughness:.68,transparent:true,opacity:.63,depthWrite:false});
+ const roofMat=new THREE.MeshStandardMaterial({color:'#976450',roughness:.8,transparent:true,opacity:.46,depthWrite:false});
+ box(3.8,.22,4.65,'#e9e3d4',0,.18,0,g);
+ box(.13,3.15,4.65,glass,-1.86,1.75,0,g);
+ for(const side of [-1,1])box(3.7,3.15,.14,glass,0,1.75,side*2.25,g);
+ for(const side of [-1,1])box(.14,3.15,1.69,glass,1.86,1.75,side*1.45,g);
+ box(.14,1.07,1.13,facade,1.86,2.90,0,g);
+ const hinge=new THREE.Group();hinge.position.set(1.91,0,-.54);g.add(hinge);
+ box(.13,2.13,1.08,'#3a806a',0,1.23,.54,hinge);
+ ball(.07,'#f3c979',.1,1.24,.81,hinge);
+ const roof=addMesh(new THREE.ConeGeometry(3.52,1.3,4),roofMat,g);
+ roof.position.y=4.1;roof.rotation.y=Math.PI/4;roof.castShadow=false;
+ // Interiores: mesa, sofá, estante e plantas visíveis através do material translúcido.
+ box(1.15,.38,.74,'#a18065',-.55,.53,-1.1,g);
+ box(.28,.75,.2,'#e8f6df',-1,.85,-1.1,g);
+ box(.95,.24,.63,'#d2a18a',-.5,.52,1.25,g);
+ box(.95,.62,.13,'#d2a18a',-.94,.85,1.25,g);
+ ball(.3,'#58a06b',-1.15,.52,-1.76,g);
+ box(.14,.9,.9,'#9cdbe5',1.91,2.64,-1.42,g);
+ box(.14,.9,.9,'#9cdbe5',1.91,2.64,1.42,g);
+ box(1.43,.07,1.2,'#dce4d8',2.5,.17,0,g);
+ const pointAt=(lx,lz=0)=>new THREE.Vector3(x+lx*Math.cos(angle)+lz*Math.sin(angle),.04,z-lx*Math.sin(angle)+lz*Math.cos(angle));
+ const home={id:'casa-'+(index+1),name:'Casa '+String(index+1).padStart(2,'0'),group:g,hinge,
+    sidewalk:pointAt(3),door:pointAt(1.96),inside:pointAt(.46),
+    side:{x:Math.sin(angle),z:Math.cos(angle)},angle,index};
+ residences.push(home);
+ point('🏡',home.name,'Esta casa tem moradores, porta funcional e uma rotina de saídas e retornos.',x,5.2,z);
+ return home;
 }
-for(const z of [-1.9,1.9])ball(.55,'#4ea16d',3.05,.72,z,home);
-box(1.4,.08,2.35,'#dedacb',17.75,.18,0);
-point('🏠','Casa habitada','Moradores saem pela porta, andam até a calçada, seguem compromissos e retornam.',14.5,5.2,0);
+makeResidence(15,-6,0,0);
+makeResidence(15,6,0,1);
+makeResidence(-15,-6,Math.PI,2);
+makeResidence(-15,6,Math.PI,3);
+makeResidence(-6,15,-Math.PI/2,4);
+makeResidence(6,15,-Math.PI/2,5);
 
-// Motoristas são moradores identificáveis dentro dos veículos, com janelas transparentes.
-// O carro e a pessoa usam a mesma transformação 3D: nada de teleportar o cidadão.
+// Motoristas são os próprios NPCs, ligados ao modelo 3D do carro.
 for(const [id,carIndex] of [[7,2],[11,5]]){
- const person=people[id],car=cars[carIndex];
- car.g.add(person.g);
- person.g.position.set(-.2,.74,.12);
- person.g.rotation.y=Math.PI/2;
- person.g.scale.setScalar(.42);
- person.drivingCar=car;
- person.state='driving';
- person.activity='Dirigindo pela cidade';
- car.g.userData.npcId=id;
+ const p=people[id],car=cars[carIndex];
+ car.g.add(p.g);p.g.position.set(-.2,.74,.12);p.g.rotation.y=Math.PI/2;p.g.scale.setScalar(.42);
+ p.drivingCar=car;p.state='driving';p.activity='Dirigindo pela cidade';car.g.userData.npcId=id;
 }
 const vendors=[people[24],people[25]];
 vendors[0].vendor='café';vendors[1].vendor='feira';
 vendors[0].g.position.set(-6,.04,-14.38);vendors[0].g.rotation.y=0;
 vendors[1].g.position.set(6,.04,-14.38);vendors[1].g.rotation.y=0;
 for(const p of vendors){p.state='working';p.routine='working';p.activity='Atendendo clientes';}
-
-const v=(x,z)=>new THREE.Vector3(x,.04,z);
-// Caminhos com pontos sucessivos: ninguém atravessa paredes ou cruza o parque em linha reta.
-const destinations=[
- {name:'café',track:0,distance:6,points:[v(-6,-12.35),v(-6,-12.75)],duration:7,activity:'Comprando no café'},
- {name:'feira',track:0,distance:18,points:[v(6,-12.35),v(6,-12.75)],duration:8,activity:'Visitando a feira'},
- {name:'casa',track:1,distance:54,points:[v(17.35,0),v(16.56,0)],duration:10,activity:'Descansando em casa'},
- {name:'laboratório',track:1,distance:18,points:[v(0,-18.72),v(0,-19.56)],duration:10,activity:'Pesquisando tecnologia'}
-];
-let homeDoorOpenUntil=0,labDoorOpenUntil=0;
-// Dois moradores começam de fato dentro da casa e saem em momentos distintos.
-for(const [id,delay] of [[12,.3],[13,6.5]]){
- const p=people[id];
- p.track=1;p.side=18;p.perimeter=144;p.distance=54;
- p.g.position.set(16.55,.04,0);
- p.g.rotation.y=Math.PI/2;
- p.routine='homeStart';p.routineTime=-delay;
- p.activity='Preparando-se para sair';
- p.visitCooldown=18+id;
-}
-function moveOnGround(p,target,dt,speed=1.35){
- const dx=target.x-p.g.position.x,dz=target.z-p.g.position.z;
- const dist=Math.hypot(dx,dz);
- if(dist<.04){p.g.position.set(target.x,.04,target.z);p.motion=0;return true;}
- const step=Math.min(dist,Math.max(0,dt)*speed);
- p.g.position.x+=dx/dist*step;p.g.position.z+=dz/dist*step;p.g.position.y=.04;
- const desired=Math.atan2(dx,dz),current=p.g.rotation.y;
- const diff=Math.atan2(Math.sin(desired-current),Math.cos(desired-current));
- p.g.rotation.y+=THREE.MathUtils.clamp(diff,-dt*5,dt*5);
- p.motion=speed;
- return dist-step<.04;
-}
-function decideGoal(p){
- // Inteligência de agentes por utilidade: os moradores avaliam necessidades ao
- // selecionar um objetivo; não há chamadas contínuas e caras à API Gemini.
- if(!p.needs)p.needs={hunger:.4+(p.id%5)*.07,rest:.18+(p.id%3)*.12,curiosity:.3+(p.id%4)*.09};
- const options=destinations.filter(d=>d.track===p.track);
- let best=options[0],score=-Infinity;
- for(const d of options){
-   const relevance=d.name==='casa'?p.needs.rest:d.name==='laboratório'?p.needs.curiosity:p.needs.hunger;
-   const jobBonus=d.name==='laboratório'&&p.id%4===0?.3:0;
-   const timeBonus=night?(d.name==='casa'?.48:d.name==='laboratório'?-.16:0):0;
-   const variety=(Math.sin(p.id*14+p.routineIndex*8+d.distance)*.5+.5)*.22;
-   const repeatPenalty=p.lastDestination===d.name?-.34:0;
-   const value=relevance+jobBonus+variety+repeatPenalty+timeBonus;
-   if(value>score){score=value;best=d;}
- }
- return best;
-}
-function completeVisit(p,d){
- if(d.name==='casa')p.needs.rest=.04;
- if(d.name==='laboratório')p.needs.curiosity=.08;
- if(d.name==='feira'||d.name==='café')p.needs.hunger=.06;
- p.lastDestination=d.name;p.routineIndex++;
- p.visitCooldown=12+(p.id%7)*3;
-}
-function beginPath(p,points,mode){
- p.waypoints=points;p.waypointIndex=0;p.routine=mode;p.motion=0;
-}
-function stepPath(p,dt){
- const target=p.waypoints[p.waypointIndex];
- if(!target)return true;
- if(moveOnGround(p,target,dt,1.32+p.id%3*.12)){
-   p.waypointIndex++;
-   return p.waypointIndex>=p.waypoints.length;
- }
- return false;
-}
-function routineAt(p,dt){
- if(p.vendor||p.drivingCar){p.motion=0;return true;}
- p.visitCooldown=Math.max(0,p.visitCooldown-dt);
- if(!p.routine)p.routine='walk';
- if(!p.needs)p.needs={hunger:.4+(p.id%5)*.07,rest:.18+(p.id%3)*.12,curiosity:.3+(p.id%4)*.09};
- p.needs.hunger=Math.min(1,p.needs.hunger+dt*.0009);
- p.needs.rest=Math.min(1,p.needs.rest+dt*.0007);
- p.needs.curiosity=Math.min(1,p.needs.curiosity+dt*.0009);
- if(p.routine==='homeStart'){
-   p.routineTime+=dt;p.motion=0;
-   if(p.routineTime<0)return true;
-   p.destination=destinations[2];
-   p.activity='Saindo de casa';
-   beginPath(p,[v(17.34,0),v(18,0)],'leave');
-   homeDoorOpenUntil=performance.now()+2600;
-   return true;
- }
- if(p.routine==='walk'){
-   p.activity='Passeando pela cidade';
-   if(p.visitCooldown>0)return false;
-   if(!p.nextDestination)p.nextDestination=decideGoal(p);
-   const d=p.nextDestination;
-   const delta=(d.distance-p.distance+p.perimeter)%p.perimeter;
-   if(delta<Math.max(.16,p.speed*dt*2.2)){
-     p.destination=d;p.nextDestination=null;
-     p.distance=d.distance;
-     applyPedestrian(p);
-     p.activity={café:'Indo ao café',feira:'Indo à feira',casa:'Indo para casa',laboratório:'Indo ao laboratório'}[d.name]||'Indo ao destino';
-     beginPath(p,d.points,'enter');
-     if(d.name==='casa')homeDoorOpenUntil=performance.now()+3200;
-     if(d.name==='laboratório')labDoorOpenUntil=performance.now()+3000;
-     return true;
-   }
-   return false;
- }
- if(p.routine==='enter'){
-   if(stepPath(p,dt)){
-     p.routine='inside';p.routineTime=0;p.motion=0;
-     p.activity=p.destination.activity;
-   }
-   return true;
- }
- if(p.routine==='inside'){
-   p.routineTime+=dt;p.motion=0;
-   if(p.routineTime>=p.destination.duration){
-     p.activity='Voltando para a calçada';
-     const sidewalk=pathAt(p.destination.distance,p.side);
-     beginPath(p,[...p.destination.points].reverse().slice(1).concat([v(sidewalk.x,sidewalk.z)]),'leave');
-     if(p.destination.name==='casa')homeDoorOpenUntil=performance.now()+3200;
-     if(p.destination.name==='laboratório')labDoorOpenUntil=performance.now()+3000;
-   }
-   return true;
- }
- if(p.routine==='leave'){
-   if(stepPath(p,dt)){
-     p.distance=(p.destination.distance+.4)%p.perimeter;
-     completeVisit(p,p.destination);
-     p.routine='walk';p.motion=0;
-     applyPedestrian(p);
-   }
-   return true;
- }
- return false;
-}
+const rotinaIA=criarMotorRotinas({
+ THREE,people,homes:residences,
+ doors:{openHome:(home,until)=>doorOpenUntil.set(home.id,until),
+   openLab:until=>{labDoorOpenUntil=until}},
+ onEvent:e=>document.dispatchEvent(new CustomEvent('sustentech:agent',{detail:e}))
+});
 
 // UI: mantém controles originais.
 const $=id=>document.getElementById(id);
@@ -732,27 +626,11 @@ function updateCars(dt){
     worldCar(c);
   }
 }
-// Pedestres em duas trilhas distintas, longe de carros e edifícios.
+// Rotas calculadas por calçadas, sem teleportar moradores.
 function updatePedestrians(dt,time){
-  if(!ui.traffic.checked)return;
-  const snap=people.map(p=>p.distance);
-  for(let i=0;i<people.length;i++){
-    const p=people[i];
-    if(p.drivingCar||p.vendor)continue;
-    if(routineAt(p,dt))continue;
-    let gap=p.perimeter;
-    for(let j=0;j<people.length;j++){
-      const other=people[j];
-      if(i===j||p.track!==other.track||other.drivingCar||other.vendor||other.routine!=='walk')continue;
-      const d=((snap[j]-snap[i]+p.perimeter)%p.perimeter);
-      if(d>.001)gap=Math.min(gap,d);
-    }
-    const speed=Math.min(p.speed,Math.max(0,(gap-1.45)*.77));
-    p.distance=(p.distance+speed*dt)%p.perimeter;
-    applyPedestrian(p);
-    p.motion=speed;
-    p.state=speed<.08?'waiting':'walking';
-  }
+ if(!ui.traffic.checked)return;
+ const hour=(8+time/20)%24;
+ rotinaIA.update(dt,{night:night||hour>=20||hour<6});
 }
 function animateResidents(dt,time){
  for(const p of people){
@@ -778,12 +656,43 @@ function animateResidents(dt,time){
      p.mouth.scale.y=speaking?2+Math.abs(Math.sin(time*16+p.id))*4:1;
    }
  }
- const now=performance.now();
- const a=now<homeDoorOpenUntil?1.05:0;
- const b=now<labDoorOpenUntil?-.95:0;
- homeDoorPivot.rotation.y=THREE.MathUtils.damp(homeDoorPivot.rotation.y,a,4.3,dt);
- pavilionDoorPivot.rotation.y=THREE.MathUtils.damp(pavilionDoorPivot.rotation.y,b,4.3,dt);
+ const t=simulationTime;
+ for(const home of residences){
+   const angle=t<(doorOpenUntil.get(home.id)||0)?-.98:0;
+   home.hinge.rotation.y=THREE.MathUtils.damp(home.hinge.rotation.y,angle,4.3,dt);
+ }
+ const labAngle=t<labDoorOpenUntil?-.94:0;
+ pavilionDoorPivot.rotation.y=THREE.MathUtils.damp(pavilionDoorPivot.rotation.y,labAngle,4.3,dt);
 }
+
+// Missões do visitante: cada objetivo depende de interação real.
+const gameMissions=new Set();let gameTimer=0;
+function completeMission(id){
+ if(gameMissions.has(id))return;
+ gameMissions.add(id);
+ const card=document.querySelector('[data-mission="'+id+'"]');
+ if(card){card.classList.add('done');const check=card.querySelector('.mission-check');if(check)check.textContent='✓';}
+ const xp=gameMissions.size*50;
+ const xpNode=document.getElementById('gameXp'),count=document.getElementById('gameCount'),badge=document.getElementById('gameBadge');
+ if(xpNode)xpNode.textContent=xp+' XP';
+ if(count)count.textContent=gameMissions.size+'/4';
+ if(badge)badge.textContent=gameMissions.size===4?'Explorador da cidade ★':'Explorador · Nível '+(1+Math.floor(xp/100));
+ document.getElementById('sceneMessage').textContent='✦ Missão concluída — +50 XP';
+}
+function updateGameState(dt,time){
+ gameTimer+=dt;if(gameTimer<.8)return;gameTimer=0;
+ const hour=(8+time/20)%24;
+ const clock=document.getElementById('simClock');
+ if(clock)clock.textContent=String(Math.floor(hour)).padStart(2,'0')+':'+String(Math.floor(hour*60)%60).padStart(2,'0');
+ const stats=rotinaIA.getStats(),label=document.getElementById('gameStats');
+ if(label)label.textContent=stats.atHome+' em casa · '+stats.onStreet+' caminhando · '+stats.visiting+' em atividade';
+}
+document.addEventListener('sustentech:talk',()=>completeMission('talk'));
+document.addEventListener('sustentech:agent',e=>{
+ if(e.detail.type==='requestHome')completeMission('request');
+ if(e.detail.type==='returnHome'&&inhabitants?.isFollowingPerson?.(e.detail.id))completeMission('home');
+});
+document.getElementById('gameToggle')?.addEventListener('click',()=>document.getElementById('gameWidget')?.classList.toggle('collapsed'));
 
 // Interação dos moradores: balões 3D e formulário de conversa dentro do visor.
 const inhabitants=iniciarHabitantes({people,renderer,camera,host,labels,controls});
@@ -807,6 +716,7 @@ const poiButtons=pointsOfInterest.map((poi,index)=>{
     poiCard.hidden=false;
     document.querySelector('#sceneMessage').textContent='📍 '+poi.title+' — informação aberta no mapa';
     button.classList.add('visited');
+    if(/Café|Feira|Alimentos/i.test(poi.title))completeMission('shop');
   };
   poiLayer.appendChild(button);return button;
 });
@@ -843,10 +753,11 @@ function resize(){
   renderer.setSize(w,h);labels.setSize(w,h);
 }
 new ResizeObserver(resize).observe(host);resize();
-const clock=new THREE.Clock();let time=0;
+const clock=new THREE.Clock();let time=0,simulationTime=0;
 function animate(){
   requestAnimationFrame(animate);
   const dt=Math.min(clock.getDelta(),.05);time+=dt;
+  if(ui.traffic.checked)simulationTime+=dt;
   if(automatic){
     const oldState=axisState('z');
     remaining-=dt;
@@ -859,6 +770,7 @@ function animate(){
   updateCars(dt);
   updatePedestrians(dt,time);
   animateResidents(dt,time);
+  updateGameState(dt,time);
   if(inhabitants?.updateCamera)inhabitants.updateCamera(dt);
   if(fountainWater)fountainWater.position.y=3.05+Math.sin(time*2)*.13;
   controls.update();
@@ -887,6 +799,9 @@ window.sustentech={
   },
   meetPerson(){inhabitants?.selectPerson?.(0);},
   stopFollow(){inhabitants?.stopFollow?.();},
-  getVersion(){return '9.0.0';}
+  sendHome(id){return rotinaIA.requestHome(id);},
+  getCitizen(id){return rotinaIA.getCitizen(id);},
+  getWorldStats(){return rotinaIA.getStats();},
+  getVersion(){return '10.0.0';}
 };
 updateUI();animate();

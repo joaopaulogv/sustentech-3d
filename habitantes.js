@@ -139,7 +139,8 @@ export function iniciarHabitantes({people,renderer,camera,host,controls}){
   hud.innerHTML=`<div class="npc-hud-top"><div><div id="hudName" class="npc-hud-name"></div><div id="hudJob" class="npc-hud-job"></div></div><button type="button" class="npc-hud-close" id="npcClose" aria-label="Fechar conversa">×</button></div>
     <div id="hudStatus" class="npc-hud-status" role="status">Converse com o morador</div>
     <form class="npc-hud-form" id="npcForm"><input id="npcQuestion" aria-label="Pergunta ao habitante" maxlength="450" placeholder="Pergunte algo ao habitante..." autocomplete="off" required><button type="submit" id="npcSend">Enviar</button></form>
-    <div class="npc-hud-hint">A resposta surge em um balão sobre a cabeça do personagem.</div>`;
+    <div class="npc-hud-actions"><button id="npcGoHome" type="button">🏠 Pedir para voltar para casa</button></div>
+    <div class="npc-hud-hint">Siga os passos do morador e veja seu próximo compromisso.</div>`;
   host.appendChild(hud);
 
   // Elemento CSS2D acompanha a posição 3D da cabeça de cada morador.
@@ -275,6 +276,9 @@ export function iniciarHabitantes({people,renderer,camera,host,controls}){
       speak(selected,previous?.text||`Oi! Eu sou ${p.nome}, ${p.profissao.toLowerCase()}. Pode perguntar!`);
     }
     status(`${p.nome} pronto para conversar • ${$('npcMode').value==='local'?'modo local':'modo Gemini'}`);
+    const goHome=$('npcGoHome');
+    goHome.hidden=!!(people[selected].vendor||people[selected].drivingCar);
+    document.dispatchEvent(new CustomEvent('sustentech:talk',{detail:{id:selected}}));
   }
   function close(){
     if(selected>=0)people[selected].state='walking';
@@ -315,6 +319,11 @@ export function iniciarHabitantes({people,renderer,camera,host,controls}){
     if(selected<0)selected=0;
     chats[selected]=[];persist(CHAT_KEY,chats);
     status('Memória deste personagem apagada.');
+  };
+  $('npcGoHome').onclick=()=>{
+    if(selected<0)return;
+    const success=window.sustentech?.sendHome?.(selected);
+    status(success?'🏡 Pedido recebido. O morador terminará o compromisso atual e voltará caminhando para casa.':'Este morador está trabalhando ou dirigindo.');
   };
   $('npcClose').onclick=close;
   const exitFollow=document.getElementById('followExit');
@@ -397,5 +406,5 @@ export function iniciarHabitantes({people,renderer,camera,host,controls}){
       if(obj){e.stopImmediatePropagation();select(obj.userData.npcId);return;}
     }
   });
-  return {updateCamera,selectPerson:select,stopFollow:close,isFollowing:()=>selected>=0};
+  return {updateCamera,selectPerson:select,stopFollow:close,isFollowing:()=>selected>=0,isFollowingPerson:id=>selected===id};
 }

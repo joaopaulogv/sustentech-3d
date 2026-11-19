@@ -207,3 +207,37 @@ footer a{text-decoration:none;color:#b9f6d3}
  .hero-copy h1{font-size:clamp(32px,8.5vw,53px);line-height:1.08}
  .world.exploring .hero-copy{transform:translateY(-20%) translateX(-20px)}
 }
+
+/* SUSTENTECH 10 — minijogo integrado sem tapar os personagens */
+.city-game{position:absolute;z-index:26;top:118px;left:clamp(18px,4vw,66px);width:291px;border-radius:18px;background:rgba(5,34,30,.93);border:1px solid rgba(137,247,187,.42);box-shadow:0 17px 52px #061d1866;backdrop-filter:blur(19px);overflow:hidden;transition:opacity .7s ease,transform .7s ease,visibility .7s ease}
+.world:not(.exploring) .city-game{opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-14px)}
+.world.exploring .city-game{opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0)}
+.game-header{display:flex;align-items:center;gap:9px;width:100%;border:0;border-radius:0;text-align:left;padding:12px;background:transparent}
+.game-header:hover{background:#2b6e4f55!important}
+.game-icon{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:#1c7657;color:#acffcf;font-size:22px}
+.game-header-copy{min-width:0;flex:1}
+.game-header-copy strong{display:block;font-size:9px;letter-spacing:.10em;white-space:nowrap}
+.game-header-copy small{display:block;font-size:10px;color:#bde7d1;margin-top:4px}
+.game-header b{font-size:11px;white-space:nowrap;color:#adffce}
+.game-arrow{color:#cafee1;transition:transform .2s}
+.game-content{padding:0 14px 12px}
+.game-progress{display:flex;justify-content:space-between;font-size:10px;color:#bbf6d4;border-top:1px solid #b2f3d82d;padding:12px 1px}
+.game-progress strong{color:#92f5c4}
+.game-missions{display:grid;gap:7px}
+.game-mission{display:flex;gap:8px;align-items:center;color:#d5f2e3;font-size:10px;line-height:1.35;min-height:24px}
+.mission-check{display:grid;place-items:center;flex-shrink:0;width:20px;height:20px;border:1px solid #669b7f;border-radius:7px;font-size:12px}
+.game-mission.done{color:#7cddaa}
+.game-mission.done .mission-check{background:#4fc58d;color:#053424;border-color:#4fc58d;font-weight:900}
+.game-stats{border-top:1px solid #b2f3d82d;margin-top:12px;padding-top:11px;color:#afddc2;font-size:10px}
+.game-hint{font-size:9px;color:#81a99a;margin:9px 0 0;line-height:1.4}
+.city-game.collapsed .game-content{display:none}
+.city-game.collapsed .game-arrow{transform:rotate(180deg)}
+.weather-pill #simClock{font-size:12px;font-variant-numeric:tabular-nums;color:#f0fff1}
+@media(max-width:670px){
+ .city-game{top:131px;left:12px;width:min(260px,calc(100vw - 87px));border-radius:13px}
+ .game-header{padding:8px}
+ .game-icon{width:27px;height:27px;font-size:17px}
+ .game-header-copy strong{font-size:8px}
+ .game-header-copy small,.game-header b{font-size:9px}
+ .weather-pill #simClock{display:none}
+}

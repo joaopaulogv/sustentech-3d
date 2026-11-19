@@ -87,3 +87,10 @@
 .npc-hud-form input{border:1px solid #4a9474!important;outline-offset:2px}
 .npc-name-tag{font-size:11px;border:1px solid #75e9ad;box-shadow:0 7px 20px #05241c77}
 @media(max-width:650px){.npc-speech{max-width:230px;font-size:11px;padding:10px 12px}.npc-hud{max-height:34svh;overflow:auto}}
+
+/* V10 — controles de interação do morador */
+.npc-hud-actions{display:flex;gap:8px;margin:8px 0 7px}
+.npc-hud-actions button{flex:1;background:#1b6245;border:1px solid #76d7a1;color:#e8fff2;padding:9px;font-size:11px;font-weight:800}
+.npc-hud-actions button:hover{background:#34885a}
+.npc-hud.minimized .npc-hud-actions{display:none}
+@media(max-width:670px){.npc-hud-actions button{padding:7px;font-size:10px}}

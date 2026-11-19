@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#071b1b">
 <meta name="description" content="Explore uma cidade inteligente 3D, acompanhe moradores e converse com personagens com inteligência artificial.">
-<title>SUSTENTECH 9.0 | Uma cidade que ganha vida</title>
-<link rel="stylesheet" href="style.css?v=9.0.0">
-<link rel="stylesheet" href="habitantes.css?v=9.0.0">
+<title>SUSTENTECH 10.0 | Uma cidade que ganha vida</title>
+<link rel="stylesheet" href="style.css?v=10.0.0">
+<link rel="stylesheet" href="habitantes.css?v=10.0.0">
 <script type="importmap">
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/"}}
 </script>
@@ -22,7 +22,7 @@
     <header class="world-header">
       <a class="brand" href="#inicio" aria-label="Voltar à cidade">
         <span class="brand-icon">✦</span>
-        <span><strong>SUSTENTECH</strong><small>SMART CITY <b>9.0</b></small></span>
+        <span><strong>SUSTENTECH</strong><small>SMART CITY <b>10.0</b></small></span>
       </a>
       <nav class="top-nav" aria-label="Navegação">
         <a href="#inicio" class="nav-active">Explorar</a>
@@ -35,7 +35,7 @@
     <div class="hero-copy">
       <div class="hero-kicker"><span class="live-dot"></span> UMA EXPERIÊNCIA INTERATIVA COM IA</div>
       <h1><span class="hero-line">Uma cidade.</span><span class="hero-line hero-line-accent">Mil histórias.</span></h1>
-      <p>Explore ruas, comércios e bairros. Acompanhe a rotina dos habitantes e converse com eles usando inteligência artificial.</p>
+      <p>Explore ruas, comércios e bairros. Cada morador agora tem uma casa, compromissos e caminhos pelas calçadas. Acompanhe suas histórias e complete desafios.</p>
       <div class="hero-buttons">
         <button id="tourCity" class="button-main" type="button">✦ Começar a explorar <span>↗</span></button>
         <button id="meetCitizen" class="button-ghost" type="button">◉ Conversar com alguém</button>
@@ -43,12 +43,29 @@
     </div>
 
     <div class="world-tools">
-      <div class="weather-pill"><span id="sceneStatus">☀️ Dia</span><span class="weather-separator"></span><span>● ONLINE</span></div>
+      <div class="weather-pill"><span id="sceneStatus">☀️ Dia</span><span class="weather-separator"></span><span id="simClock" title="Horário simulado">08:00</span><span class="weather-separator"></span><span>● ONLINE</span></div>
       <div class="scene-corner-actions">
         <button id="sceneFull" type="button" title="Expandir a cidade">⛶ <span>Tela cheia</span></button>
         <button id="sceneGuide" type="button" title="Instruções de navegação">? <span>Ajuda</span></button>
       </div>
     </div>
+
+    <aside class="city-game" id="gameWidget" aria-label="Missões de exploração">
+      <button id="gameToggle" class="game-header" type="button" aria-label="Expandir ou recolher missões">
+        <span class="game-icon">✦</span><span class="game-header-copy"><strong>DESAFIOS DA CIDADE</strong><small id="gameBadge">Explorador · Nível 1</small></span><b id="gameXp">0 XP</b><span class="game-arrow">⌄</span>
+      </button>
+      <div class="game-content">
+        <div class="game-progress"><span>Missões concluídas</span><strong id="gameCount">0/4</strong></div>
+        <div class="game-missions">
+          <div class="game-mission" data-mission="talk"><span class="mission-check">○</span><span>Converse com um morador</span></div>
+          <div class="game-mission" data-mission="shop"><span class="mission-check">○</span><span>Descubra uma loja no mapa</span></div>
+          <div class="game-mission" data-mission="request"><span class="mission-check">○</span><span>Peça para alguém voltar para casa</span></div>
+          <div class="game-mission" data-mission="home"><span class="mission-check">○</span><span>Acompanhe alguém chegando em casa</span></div>
+        </div>
+        <div id="gameStats" class="game-stats">Moradores acordando em suas casas...</div>
+        <p class="game-hint">Missões +50 XP · Observe os trajetos pelas ruas</p>
+      </div>
+    </aside>
 
     <div class="view-dock" aria-label="Câmeras da cidade">
       <div class="dock-caption">VISTAS</div><button id="showHero" class="return-intro" type="button" title="Mostrar apresentação" hidden><span>⌂</span><small>Início</small></button>
@@ -126,7 +143,7 @@
     <p class="project-disclaimer">Projeto educativo de simulação. Os valores exibidos não são leituras reais de sensores; as conversas com Gemini dependem da API configurada na Vercel.</p>
   </section>
 </main>
-<footer><span>✦ SUSTENTECH 9.0</span><span>Desenvolvimento de interfaces · Internet das Coisas</span><a href="#inicio">Voltar ao topo ↑</a></footer>
+<footer><span>✦ SUSTENTECH 10.0</span><span>Desenvolvimento de interfaces · Internet das Coisas</span><a href="#inicio">Voltar ao topo ↑</a></footer>
 
 <script>
 (function(){
@@ -161,6 +178,6 @@
  window.sustentechUi={beginExploring,showIntro};
 })();
 </script>
-<script type="module" src="script.js?v=9.0.0"></script>
+<script type="module" src="script.js?v=10.0.0"></script>
 </body>
 </html>
