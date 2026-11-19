@@ -1,0 +1,40 @@
+/* SUSTENTECH AI — balões ancorados ao NPC 3D */
+.npc-label-layer { z-index: 5; pointer-events: none; }
+.npc-label { position:relative; pointer-events:none; transform:translateY(-6px); display:grid; gap:5px; justify-items:center; width:max-content; max-width:245px; }
+.npc-name-tag { color:#ecfff4; background:rgba(12,39,29,.91); border:1px solid #72dba5; border-radius:15px; padding:5px 9px; font-size:10px; font-weight:800; box-shadow:0 5px 14px rgba(0,0,0,.25); white-space:nowrap; }
+.npc-speech { width:max-content; max-width:245px; border-radius:15px 15px 15px 4px; border:1px solid #b7f1d3; background:rgba(245,255,249,.98); color:#173c29; padding:11px 13px; text-align:left; font-size:12px; line-height:1.45; font-weight:600; white-space:pre-wrap; overflow-wrap:anywhere; box-shadow:0 12px 30px rgba(1,26,14,.35); }
+.npc-speech::after { content:""; position:absolute; bottom:16px; left:28px; width:11px; height:11px; transform:translateY(22px) rotate(45deg); background:#f5fff9; border-right:1px solid #b7f1d3; border-bottom:1px solid #b7f1d3; }
+.npc-label[hidden],.npc-speech[hidden],.npc-name-tag[hidden]{display:none!important;}
+.npc-hud { position:absolute; z-index:10; left:12px; bottom:14px; width:min(405px,calc(100% - 24px)); padding:13px; background:rgba(9,33,26,.94); color:#e7fff1; border:1px solid rgba(119,232,161,.45); border-radius:15px; box-shadow:0 15px 38px rgba(0,0,0,.35); backdrop-filter:blur(14px); cursor:default; }
+.npc-hud[hidden] { display:none!important; }
+.npc-hud-top { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+.npc-hud-name { font-weight:800; font-size:14px; }
+.npc-hud-job { color:#a3cdb4; font-size:11px; margin-top:2px; }
+.npc-hud-status { color:#88e9b0; font-size:11px; margin:8px 0; min-height:15px; }
+.npc-hud-form { display:flex; gap:7px; margin-top:9px; }
+.npc-hud-form input { flex:1; min-width:0; background:#102a20; border:1px solid #407358; color:#e9fff1; border-radius:9px; padding:10px 11px; font-size:12px; }
+.npc-hud-form button { white-space:nowrap; background:#35a46b; color:#05291a; font-size:12px; font-weight:bold; padding:9px 11px; }
+.npc-hud-close { padding:4px 9px; background:transparent; font-size:17px; }
+.npc-hud-hint { font-size:10px; color:#93b6a1; }
+.npc-settings { margin-top:20px; padding:17px; border-radius:13px; background:#173e2c; border:1px solid #377b55; }
+.npc-settings h3{margin:7px 0 3px;color:#e5fff1;font-size:18px;}
+.npc-settings p {font-size:11px;margin:6px 0 11px;color:#a5c8b4;}
+.npc-settings label { display:block; margin:12px 0 5px; font-size:11px; color:#bde6cd; font-weight:700; }
+.npc-settings input:not([type="range"]),.npc-settings textarea,.npc-settings select { display:block; width:100%; background:#0e291e; border:1px solid #437859; border-radius:8px; color:#eafff2; padding:9px; font-size:12px; font-family:inherit; }
+.npc-settings textarea { min-height:65px; resize:vertical; }
+.npc-settings input[type="range"] { width:100%; accent-color:#62ec9d; }
+.npc-settings-actions { display:flex; gap:8px; margin:11px 0; }
+.npc-settings-actions button { flex:1; font-size:12px; }
+.npc-settings .npc-primary { background:#3bae71; color:#06271a; font-weight:750; }
+.npc-settings .npc-subtitle { font-size:11px; font-weight:bold; color:#84e9aa; margin-top:13px; display:block; }
+.npc-settings [hidden] { display:none!important; }
+.npc-status-note { font-size:11px; padding:9px; margin-top:8px; color:#dcf2e3; border:1px solid #315f47; border-radius:8px; background:#102f22; overflow-wrap:anywhere; }
+.npc-settings .npc-note {color:#b7d2c2;font-size:11px;}
+@media(max-width:600px){ .npc-speech{max-width:175px;font-size:10px;padding:8px;} .npc-hud{left:8px;bottom:8px;width:calc(100% - 16px);padding:10px;} .npc-hud-top{align-items:flex-start;} .npc-hud-form input{padding:8px;} .npc-name-tag{font-size:9px;} }
+
+/* V5: diálogo acompanha o NPC, sem chat fora da cena */
+.npc-hud{width:min(330px,calc(100% - 24px));left:12px;bottom:auto;top:15px;z-index:22;background:rgba(6,27,24,.96);border:1px solid #7ff4bd;box-shadow:0 16px 44px rgba(0,0,0,.5)}
+.npc-hud:before{content:"";position:absolute;top:-7px;left:20px;width:12px;height:12px;background:#092c24;border-left:1px solid #7ff4bd;border-top:1px solid #7ff4bd;transform:rotate(45deg)}
+.npc-label{z-index:9}.npc-speech{font-size:13px;max-width:290px;border:2px solid #59c99b;background:#f8fffa;color:#123326;box-shadow:0 12px 32px #0b1b1c75}
+.npc-hud-form input{font-size:13px}.npc-hud-form button{border-radius:9px}
+@media(max-width:600px){.npc-hud{width:min(290px,calc(100% - 16px));}.npc-speech{max-width:175px}}
