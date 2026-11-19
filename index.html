@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#071b1b">
 <meta name="description" content="Explore uma cidade inteligente 3D, acompanhe moradores e converse com personagens com inteligência artificial.">
-<title>SUSTENTECH 8.0 | Uma cidade que ganha vida</title>
-<link rel="stylesheet" href="style.css?v=8.0.1">
-<link rel="stylesheet" href="habitantes.css?v=8.0.1">
+<title>SUSTENTECH 9.0 | Uma cidade que ganha vida</title>
+<link rel="stylesheet" href="style.css?v=9.0.0">
+<link rel="stylesheet" href="habitantes.css?v=9.0.0">
 <script type="importmap">
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.1/examples/jsm/"}}
 </script>
@@ -22,7 +22,7 @@
     <header class="world-header">
       <a class="brand" href="#inicio" aria-label="Voltar à cidade">
         <span class="brand-icon">✦</span>
-        <span><strong>SUSTENTECH</strong><small>SMART CITY <b>8.0</b></small></span>
+        <span><strong>SUSTENTECH</strong><small>SMART CITY <b>9.0</b></small></span>
       </a>
       <nav class="top-nav" aria-label="Navegação">
         <a href="#inicio" class="nav-active">Explorar</a>
@@ -34,7 +34,7 @@
 
     <div class="hero-copy">
       <div class="hero-kicker"><span class="live-dot"></span> UMA EXPERIÊNCIA INTERATIVA COM IA</div>
-      <h1>Uma cidade.<br><em>Mil histórias.</em></h1>
+      <h1><span class="hero-line">Uma cidade.</span><span class="hero-line hero-line-accent">Mil histórias.</span></h1>
       <p>Explore ruas, comércios e bairros. Acompanhe a rotina dos habitantes e converse com eles usando inteligência artificial.</p>
       <div class="hero-buttons">
         <button id="tourCity" class="button-main" type="button">✦ Começar a explorar <span>↗</span></button>
@@ -51,7 +51,7 @@
     </div>
 
     <div class="view-dock" aria-label="Câmeras da cidade">
-      <div class="dock-caption">VISTAS</div>
+      <div class="dock-caption">VISTAS</div><button id="showHero" class="return-intro" type="button" title="Mostrar apresentação" hidden><span>⌂</span><small>Início</small></button>
       <button id="cameraWide" type="button" title="Vista aérea da cidade"><span>◈</span><small>Aérea</small></button>
       <button id="cameraStreet" type="button" title="Vista ao nível da rua"><span>⌁</span><small>Rua</small></button>
       <button id="cameraPark" type="button" title="Vista do parque"><span>♧</span><small>Parque</small></button>
@@ -126,7 +126,7 @@
     <p class="project-disclaimer">Projeto educativo de simulação. Os valores exibidos não são leituras reais de sensores; as conversas com Gemini dependem da API configurada na Vercel.</p>
   </section>
 </main>
-<footer><span>✦ SUSTENTECH 8.0</span><span>Desenvolvimento de interfaces · Internet das Coisas</span><a href="#inicio">Voltar ao topo ↑</a></footer>
+<footer><span>✦ SUSTENTECH 9.0</span><span>Desenvolvimento de interfaces · Internet das Coisas</span><a href="#inicio">Voltar ao topo ↑</a></footer>
 
 <script>
 (function(){
@@ -137,17 +137,30 @@
    document.body.classList.toggle('fullscreen-city',v.classList.contains('immersive-fullscreen'));
    window.dispatchEvent(new Event('resize'));
  });
+ function beginExploring(){
+   $('inicio').classList.add('exploring');
+   $('showHero').hidden=false;
+ }
+ function showIntro(){
+   $('inicio').classList.remove('exploring');
+   $('showHero').hidden=true;
+   window.sustentech?.stopFollow?.();
+   window.sustentech?.setView('intro');
+ }
  $('sceneGuide').addEventListener('click',()=>{
    const help=$('sceneHelp');help.classList.toggle('guide-open');
-   help.textContent=help.classList.contains('guide-open')?'Clique em habitantes para acompanhá-los. Os balões ficam no 3D. Use a rodinha do mouse para aproximar, ou escolha uma vista no menu à esquerda.':'Arraste para explorar · Role para aproximar · Clique nos personagens ou marcadores luminosos';
+   help.textContent=help.classList.contains('guide-open')?'Clique nos habitantes para acompanhá-los. A câmera segue o personagem; converse nos balões dentro do cenário. Escolha outra vista para encerrar o acompanhamento.':'Arraste para explorar · Role para aproximar · Clique nos personagens ou marcadores luminosos';
  });
- for(const [id,view] of [['cameraWide','aerial'],['cameraStreet','street'],['cameraPark','park'],['tourCity','park']]){
-   $(id).addEventListener('click',()=>window.sustentech?.setView(view));
+ for(const [id,view] of [['cameraWide','aerial'],['cameraStreet','street'],['cameraPark','park']]){
+   $(id).addEventListener('click',()=>{beginExploring();window.sustentech?.setView(view);});
  }
- $('meetCitizen').addEventListener('click',()=>window.sustentech?.meetPerson());
+ $('tourCity').addEventListener('click',()=>{beginExploring();window.sustentech?.setView('park');});
+ $('meetCitizen').addEventListener('click',()=>{beginExploring();window.sustentech?.meetPerson();});
+ $('showHero').addEventListener('click',showIntro);
  $('quickDay').addEventListener('click',()=>$('dayToggle').click());
+ window.sustentechUi={beginExploring,showIntro};
 })();
 </script>
-<script type="module" src="script.js?v=8.0.1"></script>
+<script type="module" src="script.js?v=9.0.0"></script>
 </body>
 </html>
