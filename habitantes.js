@@ -206,7 +206,7 @@ export function iniciarHabitantes({people,renderer,camera,host,controls}){
   function close(){
     if(selected>=0)people[selected].state='walking';
     bubbles.forEach(b=>{b.container.hidden=true;b.speech.hidden=true;});
-    people.forEach(v=>v.ring.visible=false);hud.hidden=true;
+    people.forEach(v=>v.ring.visible=false);hud.hidden=true;selected=-1;
   }
   refreshSelect();fill();
   $('npcTalk').onclick=()=>{const i=Number($('npcSelect').value);select(i);focusOnPerson(i);$('npcQuestion').focus();};
