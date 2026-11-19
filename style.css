@@ -471,3 +471,12 @@ body:has(.scene-expanded){overflow:hidden}
  .scene-bottom-actions{gap:6px}
  .scene-controls-link{padding:9px}
 }
+
+/* V7: viewport realmente de ponta a ponta, painel só depois da cidade */
+html,body{width:100%;overflow-x:clip}
+.layout,.scene-card,#scene{width:100%;max-width:none}
+.scene-card{border-radius:0!important}
+#scene{height:calc(100svh - 145px)!important;min-height:600px!important}
+.scene-top,.scene-bottom{border-radius:0}
+.panel{margin-top:24px}
+@media(max-width:700px){#scene{height:calc(100svh - 135px)!important;min-height:450px!important}}
