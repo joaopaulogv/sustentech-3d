@@ -22,7 +22,7 @@
 <header>
   <div class="brand">
     ✦ <span>SUSTENTECH
-      <small>CIDADE INTELIGENTE 6.1 • IA</small>
+      <small>CIDADE INTELIGENTE 7.0 • IA</small>
     </span>
   </div>
   <span class="tag">● SIMULAÇÃO EDUCATIVA</span>
@@ -32,7 +32,7 @@
   <section class="intro">
     <span class="eyebrow">TECNOLOGIA • MOBILIDADE • SUSTENTABILIDADE</span>
     <h1>Uma cidade <em>viva e inteligente.</em></h1>
-    <p>Explore bairros modernos, acompanhe o trânsito sem colisões planejadas e converse com moradores que têm personalidades próprias.</p>
+    <p>Explore a cidade em tela cheia, acompanhe os moradores em suas rotinas, visite lojinhas e converse com personagens usando IA.</p>
   </section>
 
   <div class="layout" id="cidadeInterativa">
@@ -40,14 +40,14 @@
       <div class="scene-top">
         <div>
           <b>Cidade virtual • 188 × 188 unidades • 10 pontos interativos</b>
-          <small>Arraste para girar • Role para aproximar • Clique nos marcadores e nos habitantes</small>
+          <small>Arraste para girar • Clique em alguém para acompanhar sua caminhada • Role para aproximar</small>
         </div>
         <span id="sceneStatus">☀️ Dia</span>
       </div>
 
       <div id="scene">
         <div class="scene-corner-actions"><button type="button" id="sceneFull" title="Expandir cidade">⛶ Expandir</button><button type="button" id="sceneGuide" title="Como navegar">? Ajuda</button></div>
-        <div class="scene-help">🖱️ Clique nos moradores para conversar • 📍 Explore os marcadores luminosos</div>
+        <div class="scene-help">👤 Clique em alguém para seguir seus passos • ☕ Visite as lojas • 📍 Explore os pontos</div>
       </div>
 
       <div class="scene-bottom">
@@ -154,7 +154,7 @@
       <div class="info" id="info">
         <span class="eyebrow">DESCUBRA A CIDADE</span>
         <h3>Explore a maquete</h3>
-        <p>Clique nos marcadores 📍 sobre a cidade para abrir explicações diretamente no 3D. Visite também o laboratório: alguns moradores entram e saem pela porta.</p>
+        <p>Clique nos marcadores 📍 para descobrir a cidade. Os moradores seguem rotinas simuladas: visitam cafés, feiras, casas e laboratório. Clique em um morador para acompanhá-lo enquanto conversa.</p>
       </div>
     </aside>
   </div>
@@ -182,7 +182,7 @@
 </main>
 
 <footer>
-  SUSTENTECH 6.1 • Desenvolvimento de Interface de Usuário para IoT • Simulação educacional
+  SUSTENTECH 7.0 • Desenvolvimento de Interface de Usuário para IoT • Simulação educacional
 </footer>
 
 <script>
@@ -194,7 +194,7 @@ document.getElementById('sceneFull').addEventListener('click',()=>{
 });
 document.getElementById('sceneGuide').addEventListener('click',()=>{
  const help=document.querySelector('.scene-help');
- help.textContent='🖱️ Arraste para girar • Role para zoom • Clique no morador para conversar • Continue arrastando mesmo com a conversa aberta • Use 📍 para informações';
+ help.textContent='🖱️ Arraste para girar • Role para zoom • Clique no morador para conversar • Durante a conversa a câmera acompanha o morador • Use 📍 para informações';
  help.classList.toggle('guide-visible');
 });
 </script>
