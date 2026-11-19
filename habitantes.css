@@ -38,3 +38,27 @@
 .npc-label{z-index:9}.npc-speech{font-size:13px;max-width:290px;border:2px solid #59c99b;background:#f8fffa;color:#123326;box-shadow:0 12px 32px #0b1b1c75}
 .npc-hud-form input{font-size:13px}.npc-hud-form button{border-radius:9px}
 @media(max-width:600px){.npc-hud{width:min(290px,calc(100% - 16px));}.npc-speech{max-width:175px}}
+
+/* SUSTENTECH 6.1 — chat discreto, minimizável, sem prender câmera */
+.npc-hud{
+  left:auto!important;right:16px!important;top:auto!important;bottom:18px!important;
+  width:min(350px,calc(100% - 32px))!important;
+  max-height:min(320px,calc(100% - 95px));overflow:auto;
+  border-radius:18px;box-shadow:0 16px 50px #04130ec9;
+}
+.npc-hud::before{display:none}
+.npc-hud-top{gap:6px}
+.npc-hud-top>div:first-child{flex:1;min-width:0}
+.npc-hud-minimize,.npc-hud-focus{flex-shrink:0;font-size:12px;padding:6px 8px;border-radius:8px;background:#174b39}
+.npc-hud-focus{font-weight:700;color:#b3ffce}
+.npc-hud.minimized{width:min(300px,calc(100% - 32px))!important;overflow:hidden}
+.npc-hud.minimized .npc-hud-status,
+.npc-hud.minimized .npc-hud-form,
+.npc-hud.minimized .npc-hud-hint{display:none}
+.npc-hud.minimized .npc-hud-top{align-items:center}
+.npc-hud.minimized .npc-hud-job{display:none}
+.npc-hud:focus-within{border-color:#a2ffd0}
+@media(max-width:600px){
+ .npc-hud{right:8px!important;bottom:10px!important;width:min(315px,calc(100% - 16px))!important;padding:10px}
+ .npc-hud-focus{font-size:10px;padding:6px}
+}
