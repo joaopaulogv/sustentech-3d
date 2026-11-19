@@ -147,26 +147,29 @@ export function iniciarHabitantes({people,renderer,camera,host,controls}){
   let selected=-1,busy=false,speechTimer=null;
   const worldHead=new THREE.Vector3();
   const screenPoint=new THREE.Vector3();
-  // A caixa de digitação segue o personagem selecionado dentro do canvas.
-  function positionDialog(){
-    if(selected<0||hud.hidden)return;
-    people[selected].g.getWorldPosition(worldHead);
-    screenPoint.copy(worldHead).add(new THREE.Vector3(0,3.25,0)).project(camera);
-    const width=host.clientWidth,height=host.clientHeight;
-    const x=(screenPoint.x*.5+.5)*width;
-    const y=(-screenPoint.y*.5+.5)*height;
-    hud.style.left=Math.max(12,Math.min(width-365,x+32))+'px';
-    hud.style.top=Math.max(12,Math.min(height-165,y+20))+'px';
-    hud.style.bottom='auto';
-  }
+  // O chat fica em um canto fixo dentro do 3D: não segue a cabeça,
+  // não atrapalha a rotação da câmera e pode ser minimizado.
+  function positionDialog(){} 
   function focusOnPerson(i){
     const target=people[i].g.position.clone();
     controls.target.lerp(target,.6);
     camera.position.lerp(target.clone().add(new THREE.Vector3(14,13,18)),.66);
     controls.update();
   }
-  const dialogObserver=new ResizeObserver(positionDialog);dialogObserver.observe(host);
-  function frameDialog(){positionDialog();requestAnimationFrame(frameDialog);}requestAnimationFrame(frameDialog);
+  const minimizeButton=document.createElement('button');
+  minimizeButton.type='button';minimizeButton.className='npc-hud-minimize';
+  minimizeButton.title='Minimizar conversa';minimizeButton.textContent='−';
+  const focusButton=document.createElement('button');
+  focusButton.type='button';focusButton.className='npc-hud-focus';
+  focusButton.title='Localizar morador na cidade';focusButton.textContent='◎ Localizar';
+  hud.querySelector('.npc-hud-top').insertBefore(focusButton,$('npcClose'));
+  hud.querySelector('.npc-hud-top').insertBefore(minimizeButton,$('npcClose'));
+  minimizeButton.onclick=()=>{
+    hud.classList.toggle('minimized');
+    minimizeButton.textContent=hud.classList.contains('minimized')?'+':'−';
+    minimizeButton.title=hud.classList.contains('minimized')?'Expandir conversa':'Minimizar conversa';
+  };
+  focusButton.onclick=()=>{if(selected>=0)focusOnPerson(selected);};
   function status(text){$('npcStatus').textContent=text;$('hudStatus').textContent=text;}
   function refreshSelect(){
     $('npcSelect').replaceChildren();
@@ -196,7 +199,7 @@ export function iniciarHabitantes({people,renderer,camera,host,controls}){
     if(speechTimer)clearTimeout(speechTimer);
     $('npcSelect').value=String(selected);fill();
     $('hudName').textContent=p.nome;$('hudJob').textContent=`${p.profissao} • ${p.humor}`;
-    hud.hidden=false;positionDialog();
+    hud.hidden=false;hud.classList.remove('minimized');minimizeButton.textContent='−';
     if(showGreeting){
       const previous=chats[selected].filter(m=>m.role==='npc').at(-1);
       speak(selected,previous?.text||`Oi! Eu sou ${p.nome}, ${p.profissao.toLowerCase()}. Pode perguntar!`);
