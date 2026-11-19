@@ -70,7 +70,36 @@ export default async function handler(req,res){
     }finally{clearTimeout(timer);}
     if(!response.ok){
       const problem=await response.json().catch(()=>({}));
-      console.error('Gemini falhou:',response.status,problem?.error?.status||'');
+      const detail=String(problem?.error?.message||'').slice(0,300);
+      console.error('Gemini falhou:',response.status,problem?.error?.status||'',detail);
+      if(response.status===404){
+        // Consultar modelos disponíveis para ESTA chave, sem revelar a chave ao navegador.
+        try{
+          const listing=await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=100',{
+            headers:{'x-goog-api-key':process.env.GEMINI_API_KEY},
+            signal:AbortSignal.timeout(8000)
+          });
+          const models=await listing.json();
+          const names=(models.models||[]).filter(m=>m.supportedGenerationMethods?.includes('generateContent')).map(m=>m.name?.replace(/^models\\//,'')).filter(Boolean);
+          console.info('Modelos disponíveis para generateContent:',names.join(', '));
+          const preferred=['gemini-2.5-flash','gemini-2.5-flash-lite','gemini-2.0-flash','gemini-flash-latest'];
+          const fallback=preferred.find(m=>names.includes(m))||names.find(m=>/flash/i.test(m));
+          if(fallback&&fallback!==MODEL){
+            const retry=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(fallback)}:generateContent`,{
+              method:'POST',
+              headers:{'Content-Type':'application/json','x-goog-api-key':process.env.GEMINI_API_KEY},
+              body:JSON.stringify({systemInstruction:{parts:[{text:persona}]},contents:messages,generationConfig:{temperature:Math.max(.2,Math.min(1.1,Number(p.criatividade||65)/100)),maxOutputTokens:750}}),
+              signal:AbortSignal.timeout(18000)
+            });
+            if(retry.ok){
+              const result=await retry.json();
+              const answer=result?.candidates?.[0]?.content?.parts?.map(x=>x.text||'').join('').trim();
+              if(answer)return reply(res,200,{reply:answer.slice(0,800),model:fallback});
+            }else console.error('Fallback Gemini falhou:',retry.status,(await retry.json().catch(()=>({})))?.error?.message?.slice(0,250));
+          }
+          if(!names.length)console.error('Nenhum modelo generateContent listado; status:',listing.status);
+        }catch(e){console.error('Falha consultando modelos:',e?.message||'erro');}
+      }
       return reply(res,502,{error:response.status===429?'Cota do Gemini atingida. Confira os limites no Google AI Studio.':`Falha no Gemini (HTTP ${response.status}). Confira a chave e o modelo.`});
     }
     const result=await response.json();
