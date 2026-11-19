@@ -77,3 +77,13 @@
 .npc-speech{font-size:13px;line-height:1.5;border:1px solid #81e4b1;background:#f6fff8;color:#143629;box-shadow:0 14px 36px #06241b8c}
 .scene-shop-name{background:rgba(11,49,40,.95);border:1px solid #97ffca;box-shadow:0 9px 24px #061b1685;border-radius:10px;padding:8px 12px;color:#edfff3;font-size:12px;letter-spacing:.07em;font-weight:900;white-space:nowrap}
 @media(max-width:650px){.npc-hud{right:10px!important;bottom:74px!important;width:min(320px,calc(100% - 20px))!important}.scene-shop-name{font-size:10px;padding:5px 8px}}
+
+/* V9 — indicador de digitação, animação de diálogo e nome legível */
+.npc-speech{font-size:13px;line-height:1.58;max-width:340px;padding:14px 16px;box-shadow:0 18px 40px rgba(0,22,17,.30)}
+.npc-speech.is-typing{border-color:#72e3ae;box-shadow:0 0 0 3px rgba(108,255,189,.15),0 19px 43px rgba(0,30,21,.31)}
+.npc-hud{border-radius:19px!important;box-shadow:0 16px 50px rgba(0,12,10,.55)!important}
+.npc-hud-name{font-size:16px}
+.npc-hud-form button{background:#7ceab6!important;color:#083529!important;font-weight:850}
+.npc-hud-form input{border:1px solid #4a9474!important;outline-offset:2px}
+.npc-name-tag{font-size:11px;border:1px solid #75e9ad;box-shadow:0 7px 20px #05241c77}
+@media(max-width:650px){.npc-speech{max-width:230px;font-size:11px;padding:10px 12px}.npc-hud{max-height:34svh;overflow:auto}}
