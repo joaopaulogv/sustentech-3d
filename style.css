@@ -189,3 +189,21 @@ footer a{text-decoration:none;color:#b9f6d3}
  .poi-marker-label{display:none}
  .poi-marker-icon{font-size:20px}
 }
+
+/* V9 — tipografia corrigida e apresentação com transição cinematográfica */
+.hero-copy{width:min(690px,52vw);transition:opacity 1.05s ease,transform 1.05s cubic-bezier(.2,.8,.15,1),visibility 0s}
+.hero-copy h1{font-size:clamp(42px,4.35vw,74px);line-height:1.07;letter-spacing:-.065em}
+.hero-line{display:block;white-space:nowrap}
+.hero-line-accent{font-style:normal;color:var(--mint)}
+.world-overlay{transition:opacity 1.1s ease}
+.world.exploring .hero-copy{opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-43%) translateX(-30px);transition-delay:0s,0s,1s}
+.world.exploring .world-overlay{opacity:.22}
+.world.exploring .scene-help{opacity:1}
+.return-intro{border:1px solid #75dfac55!important;background:#2b705866!important}
+.world .view-dock .return-intro[hidden]{display:none!important}
+@media(max-width:1050px){.hero-copy{width:min(590px,64vw)}.hero-copy h1{font-size:clamp(40px,6.4vw,68px)}}
+@media(max-width:670px){
+ .hero-copy{width:calc(100% - 100px);top:31%}
+ .hero-copy h1{font-size:clamp(32px,8.5vw,53px);line-height:1.08}
+ .world.exploring .hero-copy{transform:translateY(-20%) translateX(-20px)}
+}
