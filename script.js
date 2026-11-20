@@ -4,7 +4,7 @@ import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer
 import { iniciarHabitantes } from './habitantes.js';
 import { criarMotorRotinas } from './rotinas.js';
 
-// SUSTENTECH 5.0: cidade expandida, IA, visual low-poly e mobilidade com segurança.
+// SUSTENTECH 11: praça viva, agentes com colisão e exploração jogável.
 const SIZE=104, EDGE=SIZE/2, ROADS=[-26,26], ROAD_HALF=4.15;
 const host=document.querySelector('#scene');
 const scene=new THREE.Scene();
@@ -159,10 +159,14 @@ for(const side of [-1,1]){
 // Parque central e calçadas que mantêm os pedestres fora das pistas.
 box(40,.06,40,'#76b67e',0,.075,0);
 for(const r of [12,18]){
-  box(2*r+.9,.12,.85,'#dfd5b9',0,.16,-r);
-  box(2*r+.9,.12,.85,'#dfd5b9',0,.16,r);
-  box(.85,.12,2*r+.9,'#dfd5b9',-r,.16,0);
-  box(.85,.12,2*r+.9,'#dfd5b9',r,.16,0);
+  box(2*r+2,.12,2.3,'#e6dcc6',0,.16,-r);
+  box(2*r+2,.12,2.3,'#e6dcc6',0,.16,r);
+  box(2.3,.12,2*r+2,'#e6dcc6',-r,.16,0);
+  box(2.3,.12,2*r+2,'#e6dcc6',r,.16,0);
+  for(let tile=-r;tile<=r;tile+=2){
+    for(const z of [-r,r])box(.065,.014,2.1,'#cabda4',tile,.238,z);
+    for(const x of [-r,r])box(2.1,.014,.065,'#cabda4',x,.238,tile);
+  }
 }
 // Fonte central.
 cylinder(3.9,3.9,.45,'#ddd9d0',0,.32,0,scene,24);
@@ -263,7 +267,7 @@ function flowerBed(x,z){
     flower.scale.y=.55;
   }
 }
-for(const [x,z] of [[-11,-11],[11,-11],[-11,11],[11,11],[-3,11],[3,-11]])flowerBed(x,z);
+for(const [x,z] of [[-9,-9],[9,-9],[-9,9],[9,9],[-3,9],[3,9]])flowerBed(x,z);
 function recyclingStation(x,z){
   const g=new THREE.Group();g.position.set(x,0,z);scene.add(g);
   for(const [i,color] of ['#3299d1','#e5c454','#62bd7d'].entries()){
@@ -316,8 +320,8 @@ function solarPanel(x,z){
   panels.push(p);
   tag(p,'☀️ Painel solar','A geração solar mostrada no site é ilustrativa e não representa dados reais de sensores.');
 }
-for(const [x,z] of [[-6,-15],[6,-15],[-6,15],[6,15]])solarPanel(x,z);
-point('☀️','Energia solar','Os painéis fotovoltaicos convertem luz solar em eletricidade. Nesta maquete os indicadores são ilustrativos.',6,4,-15);
+for(const [x,z] of [[-42,-12],[42,-12],[-42,12],[42,12]])solarPanel(x,z);
+point('☀️','Energia solar','Os painéis fotovoltaicos convertem luz solar em eletricidade. Nesta maquete os indicadores são ilustrativos.',-42,4,-12);
 point('💡','Iluminação IoT','Postes inteligentes simulam o acionamento de lâmpadas conforme o ciclo dia e noite.',-35,7,-31);
 point('🚦','Trânsito conectado','Os semáforos são coordenados para organizar o fluxo de veículos nos cruzamentos.',-26,7,-26);
 point('🏡','Casas inteligentes','Casas automatizadas podem utilizar sensores de presença, temperatura e segurança.',15,7,15);
@@ -462,24 +466,38 @@ tag(pavilionSign,'🔬 Centro de pesquisa','Os moradores podem visitar o laborat
 point('🔬','Centro de pesquisa','Observe os moradores entrando no laboratório! Aqui são simuladas pesquisas sobre sensores IoT e sustentabilidade.',0,4.3,-20.3);
 // Rotinas autônomas locais: decisões baseadas em horários, destinos e tarefas.
 // Não chamamos o Gemini a cada frame; a IA generativa permanece exclusiva dos diálogos.
+const shopLabels=[];
 function foodStall(x,z,title,color,icon){
-  const g=new THREE.Group();g.position.set(x,0,z);scene.add(g);
-  box(4.4,.23,2.5,'#d6c2a3',0,.18,0,g);
+  const g=new THREE.Group();g.position.set(x,0,z);g.rotation.y=Math.PI;scene.add(g);
+  // Fachada voltada para o passeio. O balcão fica fora da pista de pedestres.
+  box(4.65,.20,2.8,'#d4bd9b',0,.18,0,g);
   box(3.8,1.12,1.25,'#b88c68',0,.78,-.28,g);
   box(4.4,.24,1.75,'#f5e3c2',0,1.42,.15,g);
   for(const dx of [-1.8,1.8])cylinder(.065,.065,2.4,'#516d61',dx,2.55,-.65,g);
   box(4.9,.26,2.8,color,0,3.82,-.5,g);
   for(let i=0;i<5;i++)box(.88,.37,.19,i%2?'#fff1d7':color,-1.95+i*.97,3.56,.91,g);
+  for(let stripe=-2;stripe<=2;stripe++)box(.63,.018,2.44,stripe%2?'#fff1db':color,stripe*.93,3.96,-.48,g);
+  box(1.4,.88,.12,'#19463b',-1.05,2.3,.92,g);
+  for(const yy of [2.1,2.3,2.5])box(.88,.035,.03,'#f9daa3',-1.05,yy,1,g);
+  for(const xx of [.68,1.34,1.98]){
+    cylinder(.31,.34,.25,'#b88b60',xx-1.1,1.55,.53,g,8);
+    ball(.19,xx>1.6?'#dd9d58':'#eec783',xx-1.1,1.81,.53,g);
+  }
+  for(const edge of [-2.2,2.2]){
+    cylinder(.23,.29,.7,'#866851',edge,.5,.35,g);
+    ball(.39,'#4c995a',edge,.99,.35,g);
+  }
   const board=box(3.8,.52,.14,'#194b3c',0,2.9,.93,g);
   tag(board,icon+' '+title,'Loja com atendente, compras simuladas e moradores que fazem visitas durante suas rotinas.');
   const sign=document.createElement('div');sign.className='scene-shop-name';sign.textContent=icon+' '+title;
   const signLabel=new CSS2DObject(sign);signLabel.position.set(0,4.65,0);g.add(signLabel);
+  shopLabels.push({element:sign,group:g});
 
   for(let i=0;i<5;i++)ball(.15,['#e6b867','#c95c4d','#80b96b'][i%3],-1.35+i*.67,1.62,.58,g);
   point(icon,title,'Os moradores visitam esta loja para comprar alimentos. O atendimento e as rotinas são simulados localmente.',x,5,z);
 }
-foodStall(-6,-13.8,'CAFÉ VERDE','#eaa66f','☕');
-foodStall(6,-13.8,'FEIRA VIVA','#55c991','🥗');
+foodStall(-6,-8.9,'CAFÉ VERDE','#e2a073','☕');
+foodStall(6,-8.9,'FEIRA VIVA','#5ec395','🥗');
 // Bairro residencial: casas transparentes (estilo maquete) e portas articuladas.
 // As entradas ficam ligadas às calçadas; nenhum morador atravessa uma parede sólida.
 const residences=[],doorOpenUntil=new Map();
@@ -532,11 +550,20 @@ for(const [id,carIndex] of [[7,2],[11,5]]){
 }
 const vendors=[people[24],people[25]];
 vendors[0].vendor='café';vendors[1].vendor='feira';
-vendors[0].g.position.set(-6,.04,-14.38);vendors[0].g.rotation.y=0;
-vendors[1].g.position.set(6,.04,-14.38);vendors[1].g.rotation.y=0;
+vendors[0].g.position.set(-6,.04,-8.15);vendors[0].g.rotation.y=Math.PI;
+vendors[1].g.position.set(6,.04,-8.15);vendors[1].g.rotation.y=Math.PI;
 for(const p of vendors){p.state='working';p.routine='working';p.activity='Atendendo clientes';}
 const rotinaIA=criarMotorRotinas({
  THREE,people,homes:residences,
+ obstacles:[
+   {type:'circle',x:0,z:0,radius:3.92},
+   {type:'box',x:-6,z:-8.9,halfX:2.36,halfZ:1.29},
+   {type:'box',x:6,z:-8.9,halfX:2.36,halfZ:1.29},
+   ...[[-6,-6],[6,-6],[-6,6],[6,6],[0,8],[8,0],[-8,0],[0,-8]]
+     .map(([x,z])=>({type:'circle',x,z,radius:.31})),
+   ...[[-9,-9],[9,-9],[-9,9],[9,9],[-3,9],[3,9]]
+     .map(([x,z])=>({type:'box',x,z,halfX:1.58,halfZ:.65}))
+ ],
  doors:{openHome:(home,until)=>doorOpenUntil.set(home.id,until),
    openLab:until=>{labDoorOpenUntil=until}},
  onEvent:e=>document.dispatchEvent(new CustomEvent('sustentech:agent',{detail:e}))
@@ -667,6 +694,7 @@ function animateResidents(dt,time){
 
 // Missões do visitante: cada objetivo depende de interação real.
 const gameMissions=new Set();let gameTimer=0;
+let collectedEnergy=0;
 function completeMission(id){
  if(gameMissions.has(id))return;
  gameMissions.add(id);
@@ -675,8 +703,8 @@ function completeMission(id){
  const xp=gameMissions.size*50;
  const xpNode=document.getElementById('gameXp'),count=document.getElementById('gameCount'),badge=document.getElementById('gameBadge');
  if(xpNode)xpNode.textContent=xp+' XP';
- if(count)count.textContent=gameMissions.size+'/4';
- if(badge)badge.textContent=gameMissions.size===4?'Explorador da cidade ★':'Explorador · Nível '+(1+Math.floor(xp/100));
+ if(count)count.textContent=gameMissions.size+'/5';
+ if(badge)badge.textContent=gameMissions.size===5?'Explorador da cidade ★':'Explorador · Nível '+(1+Math.floor(xp/100));
  document.getElementById('sceneMessage').textContent='✦ Missão concluída — +50 XP';
 }
 function updateGameState(dt,time){
@@ -696,6 +724,42 @@ document.getElementById('gameToggle')?.addEventListener('click',()=>document.get
 
 // Interação dos moradores: balões 3D e formulário de conversa dentro do visor.
 const inhabitants=iniciarHabitantes({people,renderer,camera,host,labels,controls});
+
+// Jogo: coletar energia clicando nos cristais suspensos acima dos jardins.
+const energyOrbs=[];
+const orbMaterial=new THREE.MeshStandardMaterial({
+ color:'#8bffbe',emissive:'#2bff96',emissiveIntensity:1.25,
+ metalness:.28,roughness:.18
+});
+const orbPositions=[[-9,-9],[9,-9],[-9,9],[9,9],[-3,9],[3,9]];
+for(let i=0;i<orbPositions.length;i++){
+ const [x,z]=orbPositions[i],g=new THREE.Group();
+ g.position.set(x,1.65,z);scene.add(g);
+ const crystal=addMesh(new THREE.OctahedronGeometry(.43),orbMaterial,g);
+ crystal.userData.orbIndex=i;crystal.castShadow=false;
+ const halo=new THREE.Mesh(new THREE.TorusGeometry(.62,.038,5,24),
+   new THREE.MeshBasicMaterial({color:'#94ffd0',transparent:true,opacity:.7}));
+ halo.rotation.x=Math.PI/2;g.add(halo);
+ energyOrbs.push({g,crystal,halo,taken:false,offset:i});
+}
+function collectEnergyOrb(i){
+ const orb=energyOrbs[i];
+ if(!orb||orb.taken)return;
+ orb.taken=true;orb.g.visible=false;collectedEnergy++;
+ const label=document.getElementById('energyCount');
+ if(label)label.textContent=collectedEnergy+'/'+energyOrbs.length;
+ document.getElementById('sceneMessage').textContent='⚡ Energia coletada! '+collectedEnergy+'/'+energyOrbs.length;
+ if(collectedEnergy===energyOrbs.length)completeMission('collect');
+}
+function animateEnergyOrbs(t){
+ for(const orb of energyOrbs){
+   if(orb.taken)continue;
+   orb.g.position.y=1.66+Math.sin(t*2+orb.offset)*.28;
+   orb.crystal.rotation.y+=.015;
+   orb.crystal.rotation.z+=.006;
+   orb.halo.rotation.z+=.012;
+ }
+}
 
 // Marcadores interativos flutuam no cenário 3D e abrem informações no próprio visor.
 const poiLayer=document.createElement('div');poiLayer.className='poi-layer';host.appendChild(poiLayer);
@@ -722,13 +786,31 @@ const poiButtons=pointsOfInterest.map((poi,index)=>{
 });
 const poiWorld=new THREE.Vector3();
 function updatePOI(){
-  const w=host.clientWidth,h=host.clientHeight;
-  pointsOfInterest.forEach((poi,i)=>{
-    poiWorld.set(poi.x,poi.y,poi.z).project(camera);
-    const inView=poiWorld.z>-1&&poiWorld.z<1&&Math.abs(poiWorld.x)<.95&&Math.abs(poiWorld.y)<.95;
-    const button=poiButtons[i];button.hidden=!inView;
-    if(inView){button.style.left=((poiWorld.x+1)*.5*w)+'px';button.style.top=((-poiWorld.y+1)*.5*h)+'px';}
-  });
+ const w=host.clientWidth,h=host.clientHeight;
+ const candidates=[],temp=new THREE.Vector3(),position=new THREE.Vector3();
+ for(let i=0;i<pointsOfInterest.length;i++){
+   const poi=pointsOfInterest[i];
+   position.set(poi.x,poi.y,poi.z);
+   const distance=camera.position.distanceTo(position);
+   temp.copy(position).project(camera);
+   const inView=temp.z>-1&&temp.z<1&&Math.abs(temp.x)<.92&&Math.abs(temp.y)<.88&&distance<100;
+   poiButtons[i].hidden=true;
+   if(!inView)continue;
+   candidates.push({i,distance,x:(temp.x+1)*.5*w,y:(1-temp.y)*.5*h});
+ }
+ candidates.sort((a,b)=>a.distance-b.distance);
+ const placed=[];
+ for(const target of candidates){
+   if(placed.length>=9)break;
+   if(placed.some(p=>Math.hypot(p.x-target.x,p.y-target.y)<72))continue;
+   const button=poiButtons[target.i];
+   button.hidden=false;button.style.left=target.x+'px';button.style.top=target.y+'px';
+   placed.push(target);
+ }
+ for(const label of shopLabels){
+   label.group.getWorldPosition(position);
+   label.element.hidden=camera.position.distanceTo(position)>47;
+ }
 }
 
 const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
@@ -739,6 +821,8 @@ renderer.domElement.addEventListener('pointerup',e=>{
   const rect=renderer.domElement.getBoundingClientRect();
   pointer.set((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1);
   raycaster.setFromCamera(pointer,camera);
+  const foundOrb=raycaster.intersectObjects(energyOrbs.filter(o=>!o.taken).map(o=>o.crystal),false)[0];
+  if(foundOrb){collectEnergyOrb(foundOrb.object.userData.orbIndex);return;}
   const hit=raycaster.intersectObjects(infoObjects)[0];
   if(hit){const d=hit.object.userData.details;const info=$('info');info.replaceChildren();
     const eyebrow=document.createElement('span');eyebrow.className='eyebrow';eyebrow.textContent='TECNOLOGIA SUSTENTECH';
@@ -771,6 +855,7 @@ function animate(){
   updatePedestrians(dt,time);
   animateResidents(dt,time);
   updateGameState(dt,time);
+  animateEnergyOrbs(time);
   if(inhabitants?.updateCamera)inhabitants.updateCamera(dt);
   if(fountainWater)fountainWater.position.y=3.05+Math.sin(time*2)*.13;
   controls.update();
@@ -802,6 +887,6 @@ window.sustentech={
   sendHome(id){return rotinaIA.requestHome(id);},
   getCitizen(id){return rotinaIA.getCitizen(id);},
   getWorldStats(){return rotinaIA.getStats();},
-  getVersion(){return '10.0.0';}
+  getVersion(){return '11.0.0';}
 };
 updateUI();animate();

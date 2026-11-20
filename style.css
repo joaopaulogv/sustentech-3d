@@ -241,3 +241,50 @@ footer a{text-decoration:none;color:#b9f6d3}
  .game-header-copy small,.game-header b{font-size:9px}
  .weather-pill #simClock{display:none}
 }
+
+/* SUSTENTECH 11 — legibilidade do mapa 3D e estilo de jogo */
+.world.exploring .world-overlay{opacity:.10}
+.poi-marker{
+  width:40px!important;height:40px!important;padding:0!important;
+  justify-content:center!important;display:flex!important;
+  border-radius:50%!important;
+  box-shadow:0 8px 24px rgba(0,23,16,.46),0 0 0 4px rgba(101,255,181,.15);
+  transition:box-shadow .25s,transform .25s,background .25s;
+}
+.poi-marker[hidden]{display:none!important}
+.poi-marker:hover,.poi-marker:focus-visible{
+  transform:translate(-50%,-50%) scale(1.13)!important;
+  box-shadow:0 6px 26px #052b1cd9,0 0 0 7px #84ffc82f
+}
+.poi-marker-icon{font-size:20px!important}
+.poi-marker-label{
+  display:block!important;position:absolute;bottom:calc(100% + 10px);left:50%;
+  transform:translate(-50%,8px);opacity:0;pointer-events:none;
+  padding:7px 12px;white-space:nowrap;border-radius:10px;
+  background:rgba(5,40,30,.95);border:1px solid #9ef5c3;
+  box-shadow:0 9px 24px #051a1566;
+  font-size:11px;transition:opacity .18s,transform .18s
+}
+.poi-marker:hover .poi-marker-label,.poi-marker:focus-visible .poi-marker-label{
+  opacity:1;transform:translate(-50%,0)
+}
+.scene-shop-name{padding:7px 10px;border:1px solid #a5fbc7;background:rgba(5,40,30,.94);
+  box-shadow:0 5px 16px #00251991;border-radius:12px;letter-spacing:.08em;
+  font-size:10px;max-width:125px;text-overflow:ellipsis;overflow:hidden}
+.scene-shop-name[hidden]{display:none!important}
+.energy-score{display:flex;justify-content:space-between;align-items:center;gap:8px;
+ padding:11px 12px;margin-top:11px;border-radius:11px;
+ background:linear-gradient(110deg,rgba(50,142,103,.33),rgba(8,73,54,.44));
+ border:1px solid rgba(135,255,192,.32);color:#c7ffe0;font-size:10px}
+.energy-score strong{font-size:14px;color:#8dffbf;font-variant-numeric:tabular-nums}
+.city-game{border-color:rgba(121,241,178,.48)}
+.game-mission.done{background:rgba(41,144,95,.12);border-radius:6px}
+.npc-label{max-width:230px}
+@media(max-width:670px){
+  .scene-shop-name{font-size:9px;max-width:95px;letter-spacing:0}
+  .poi-marker{width:34px!important;height:34px!important}
+  .poi-marker-icon{font-size:17px!important}
+  .game-missions{gap:4px}
+  .game-mission{font-size:9px}
+  .world .view-dock{background:rgba(5,43,33,.88)}
+}
